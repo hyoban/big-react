@@ -1,0 +1,19 @@
+{
+  "name": "big-react",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [],
+  "author": "Hyoban",
+  "license": "ISC",
+  "devDependencies": {
+    "@hyoban/eslint-config-react": "^0.1.7",
+    "eslint": "^8.29.0",
+    "rollup": "^3.7.1",
+    "typescript": "^4.9.4"
+  }
+}
