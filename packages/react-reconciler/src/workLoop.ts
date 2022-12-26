@@ -1,4 +1,5 @@
 import { beginWork } from './beginWork'
+import { completeWork } from './completeWork'
 import type { FiberNode, FiberRootNode } from './fiber'
 import { createWorkInProgress } from './fiber'
 import { HostRoot } from './workTags'
@@ -46,6 +47,12 @@ function renderRoot(root: FiberRootNode) {
       workInProgress = null
     }
   } while (true)
+
+  const finishedWork = root.current.alternate
+  root.finishedWork = finishedWork
+
+  // 根据 flag 提交更新
+  commitRoot(root)
 }
 
 function workLoop() {
