@@ -1,3 +1,4 @@
+import type { Container } from 'hostConfig'
 import { appendInitialChild, createInstance, createTextInstance } from 'hostConfig'
 import type { FiberNode } from './fiber'
 import { NoFlags } from './fiberFlags'
@@ -41,7 +42,7 @@ export const completeWork = (wip: FiberNode) => {
   }
 }
 
-function appendAllChildren(parent: FiberNode, wip: FiberNode) {
+function appendAllChildren(parent: Container, wip: FiberNode) {
   // 插入的应该是组件中的实际节点
   let node = wip.child
 
