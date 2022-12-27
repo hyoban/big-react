@@ -6,20 +6,25 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build:dev": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js"
+    "build:dev": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js",
+    "demo": "vite serve demos/test-fc --config scripts/vite/vite.config.js --force"
   },
   "keywords": [],
   "author": "Hyoban",
   "license": "ISC",
   "devDependencies": {
     "@hyoban/eslint-config-react": "^0.1.8",
-    "@rollup/plugin-commonjs": "^23.0.4",
-    "eslint": "^8.29.0",
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react": "^3.0.0",
+    "eslint": "^8.30.0",
     "rimraf": "^3.0.2",
-    "rollup": "^3.7.1",
+    "rollup": "^3.8.1",
     "rollup-plugin-generate-package-json": "^3.2.0",
     "rollup-plugin-typescript2": "^0.34.1",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "vite": "^4.0.3"
   },
   "dependencies": {
     "@rollup/plugin-alias": "^4.0.2",
