@@ -1,3 +1,4 @@
+import type { Dispatch } from 'react/src/currentDispatcher'
 import type { Action } from 'shared/ReactTypes'
 
 export interface Update<State> {
@@ -8,6 +9,7 @@ export interface UpdateQueue<State> {
   shared: {
     pending: Update<State> | null
   }
+  dispatch: Dispatch<State> | null
 }
 
 export const createUpdate = <State>(action: Action<State>): Update<State> => {
@@ -21,6 +23,7 @@ export const createUpdateQueue = <State>() => {
     shared: {
       pending: null,
     },
+    dispatch: null,
   } as UpdateQueue<State>
 }
 
@@ -44,7 +47,8 @@ export const processUpdateQueue = <State>(
     if (action instanceof Function) {
       // baseState 1 update (x) => 4x -> memoizedState 4
       result.memoizedState = action(baseState)
-    } else {
+    }
+    else {
       // baseState 1 update 2 -> memoizedState 2
       result.memoizedState = action
     }

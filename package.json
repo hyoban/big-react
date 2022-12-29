@@ -14,7 +14,7 @@
   "author": "Hyoban",
   "license": "ISC",
   "devDependencies": {
-    "@hyoban/eslint-config-react": "^0.1.9",
+    "@antfu/eslint-config-react": "^0.34.0",
     "@rollup/plugin-alias": "^4.0.2",
     "@rollup/plugin-commonjs": "^24.0.0",
     "@rollup/plugin-replace": "^5.0.2",
