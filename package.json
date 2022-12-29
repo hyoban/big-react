@@ -2,12 +2,12 @@
   "name": "big-react",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "build:dev": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js",
     "demo": "vite serve demos/test-fc --config scripts/vite/vite.config.js --force",
+    "test": "jest --config scripts/jest/jest.config.js",
     "dep:up": "taze -rw latest && pnpm i"
   },
   "keywords": [],
@@ -15,6 +15,9 @@
   "license": "ISC",
   "devDependencies": {
     "@antfu/eslint-config-react": "^0.34.0",
+    "@babel/core": "^7.20.7",
+    "@babel/plugin-transform-react-jsx": "^7.20.7",
+    "@babel/preset-env": "^7.20.2",
     "@rollup/plugin-alias": "^4.0.2",
     "@rollup/plugin-commonjs": "^24.0.0",
     "@rollup/plugin-replace": "^5.0.2",
@@ -22,6 +25,9 @@
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^3.0.0",
     "eslint": "^8.30.0",
+    "jest": "^29.3.1",
+    "jest-config": "^29.3.1",
+    "jest-environment-jsdom": "^29.3.1",
     "rimraf": "^3.0.2",
     "rollup": "^3.9.0",
     "rollup-plugin-generate-package-json": "^3.2.0",

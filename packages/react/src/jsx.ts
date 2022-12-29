@@ -18,9 +18,18 @@ const ReactElement = function (
   return element
 }
 
+export function isValidElement(object: any) {
+  return (
+    typeof object === 'object'
+    && object !== null
+    && object.$$typeof === REACT_ELEMENT_TYPE
+  )
+}
+
 export const jsx = function (
   type: ElementType,
   config: any,
+  ...maybeChildren: any
 ) {
   const props: Props = {}
 
@@ -29,18 +38,31 @@ export const jsx = function (
   for (const propName in config) {
     const val = config[propName]
     if (propName === 'key') {
-      if (val !== undefined) {
+      if (val !== undefined)
         key = `${val}`
-      }
-    } else if (propName === 'ref') {
-      if (val !== undefined) {
+    }
+    else if (propName === 'ref') {
+      if (val !== undefined)
         ref = val
-      }
-    } else if ({}.hasOwnProperty.call(config, propName)) {
+    }
+    else if ({}.hasOwnProperty.call(config, propName)) {
       props[propName] = val
     }
+  }
+
+  const maybeChildrenLength = maybeChildren.length
+  if (maybeChildrenLength) {
+    if (maybeChildrenLength === 1)
+      props.children = maybeChildren[0]
+    else
+      props.children = maybeChildren
   }
   return ReactElement(type, key, ref, props)
 }
 
-export const jsxDEV = jsx
+export const jsxDEV = (
+  type: ElementType,
+  config: any,
+) => {
+  return jsx(type, config)
+}
