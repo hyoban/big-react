@@ -15,12 +15,12 @@ export default [
     output: [
       {
         file: `${pkgDistPath}/index.js`,
-        name: 'index.js',
+        name: 'ReactDOM',
         format: 'umd',
       },
       {
         file: `${pkgDistPath}/client.js`,
-        name: 'client.js',
+        name: 'client',
         format: 'umd',
       },
     ],
