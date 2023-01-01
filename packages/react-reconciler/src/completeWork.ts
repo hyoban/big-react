@@ -1,8 +1,12 @@
 import type { Container } from 'hostConfig'
 import { appendInitialChild, createInstance, createTextInstance } from 'hostConfig'
 import type { FiberNode } from './fiber'
-import { NoFlags } from './fiberFlags'
+import { NoFlags, Update } from './fiberFlags'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags'
+
+function markUpdate(fiber: FiberNode) {
+  fiber.flags |= Update
+}
 
 export const completeWork = (wip: FiberNode) => {
   // 递归中的归
@@ -25,6 +29,11 @@ export const completeWork = (wip: FiberNode) => {
     case HostText:
       if (current !== null && current.stateNode) {
         // update
+        const oldText = current.memoizedProps.content
+        const newText = newProps.content
+        if (oldText !== newText) {
+          markUpdate(wip)
+        }
       } else {
         // 构建离屏 DOM
         const instance = createTextInstance(newProps.content)

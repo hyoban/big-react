@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client'
 function App() {
   const [num, setNum] = useState(1)
   window.setNum = setNum
-  return <div>{ num }</div>
+  return num === 3 ? <Child /> : <div>{num}</div>
 }
 
 function Child() {
