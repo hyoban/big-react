@@ -29,8 +29,7 @@ export function renderWithHooks(wip: FiberNode) {
   const current = wip.alternate
   if (current !== null) {
     // update
-  }
-  else {
+  } else {
     // mount
     currentDispatcher.current = HooksDispatcherOnMount
   }
@@ -49,10 +48,11 @@ function mountState<State>(
   const hook = mountWorkInProgressHook()
 
   let memoizedState
-  if (initialState instanceof Function)
+  if (initialState instanceof Function) {
     memoizedState = initialState()
-  else
+  } else {
     memoizedState = initialState
+  }
 
   hook.memoizedState = memoizedState
 
@@ -87,13 +87,11 @@ function mountWorkInProgressHook(): Hook {
     // mount 时第一个 hook
     if (currentlyRenderingFiber === null) {
       throw new Error('请在函数组件中调用 hooks')
-    }
-    else {
+    } else {
       workInProgressHook = hook
       currentlyRenderingFiber.memoizedState = workInProgressHook
     }
-  }
-  else {
+  } else {
     // mount 时以后的 hook
     workInProgressHook = workInProgressHook.next = hook
   }

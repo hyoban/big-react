@@ -2,15 +2,15 @@
   "name": "react-dom",
   "version": "1.0.0",
   "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
   "module": "index.ts",
-  "dependencies": {
-    "react-reconciler": "workspace:*",
-    "shared": "workspace:*"
-  },
   "peerDependencies": {
     "react": "workspace:*"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "dependencies": {
+    "react-reconciler": "workspace:*",
+    "shared": "workspace:*"
+  }
 }

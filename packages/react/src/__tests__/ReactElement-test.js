@@ -239,8 +239,9 @@ describe('ReactElement', () => {
       return OTHER_SYMBOL
     }
     global.Symbol.for = function (key) {
-      if (key === 'react.element')
+      if (key === 'react.element') {
         return REACT_ELEMENT_TYPE
+      }
 
       return OTHER_SYMBOL
     }

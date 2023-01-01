@@ -38,24 +38,25 @@ export const jsx = function (
   for (const propName in config) {
     const val = config[propName]
     if (propName === 'key') {
-      if (val !== undefined)
+      if (val !== undefined) {
         key = `${val}`
-    }
-    else if (propName === 'ref') {
-      if (val !== undefined)
+      }
+    } else if (propName === 'ref') {
+      if (val !== undefined) {
         ref = val
-    }
-    else if ({}.hasOwnProperty.call(config, propName)) {
+      }
+    } else if ({}.hasOwnProperty.call(config, propName)) {
       props[propName] = val
     }
   }
 
   const maybeChildrenLength = maybeChildren.length
   if (maybeChildrenLength) {
-    if (maybeChildrenLength === 1)
+    if (maybeChildrenLength === 1) {
       props.children = maybeChildren[0]
-    else
+    } else {
       props.children = maybeChildren
+    }
   }
   return ReactElement(type, key, ref, props)
 }
