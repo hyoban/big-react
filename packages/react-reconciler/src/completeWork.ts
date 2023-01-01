@@ -1,5 +1,6 @@
 import type { Container } from 'hostConfig'
 import { appendInitialChild, createInstance, createTextInstance } from 'hostConfig'
+import { updateFiberProps } from 'react-dom/src/SyntheticEvent'
 import type { FiberNode } from './fiber'
 import { NoFlags, Update } from './fiberFlags'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags'
@@ -17,8 +18,11 @@ export const completeWork = (wip: FiberNode) => {
     case HostComponent:
       if (current !== null && current.stateNode) {
         // update
+        // TODO: 比较各种 props 是否变化，记录更新 flags
+        updateFiberProps(current.stateNode, newProps)
       } else {
-        // 构建离屏 DOM
+        // mount
+        // 构建离屏 DOM，同时记录 props
         const instance = createInstance(wip.type, newProps)
         // 将 DOM 插入 DOM 树中
         appendAllChildren(instance, wip)
