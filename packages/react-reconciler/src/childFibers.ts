@@ -5,9 +5,12 @@ import { ChildDeletion, Placement } from './fiberFlags'
 import { HostText } from './workTags'
 
 function ChildReconciler(
+  /**
+   * 不追踪副作用的话，就不比较多余的 flag，为首屏 mount 优化。
+   * 虽然这里的 fiberNode 没有 Placement，但是在 hostRootFiber 上会有。
+   * 所以最后是对根节点进行一次 Placement 操作。
+   */
   shouldTrackEffects: boolean,
-  // 不追踪副作用的话，就不比较多余的 flag，为首屏 mount 优化
-  // 虽然这里的 fiberNode 没有 Placement，但是在 hostRootFiber 上会有
 ) {
   function deleteChild(returnFiber: FiberNode, childToDelete: FiberNode) {
     if (!shouldTrackEffects) {
@@ -51,6 +54,7 @@ function ChildReconciler(
       }
     }
 
+    // mount 时就是根据 element 创建 fiberNode 即可
     const fiber = createFiberFromElement(element)
     fiber.return = returnFiber
     return fiber
@@ -70,11 +74,18 @@ function ChildReconciler(
       }
       deleteChild(returnFiber, currentFiber)
     }
+
+    // mount
     const fiber = new FiberNode(HostText, { content }, null)
     fiber.return = returnFiber
     return fiber
   }
 
+  /**
+   * 应用首屏优化策略，根据 shouldTrackEffects 判断是否需要标记 Placement
+   * @param fiber
+   * @returns
+   */
   function placeSingleChild(fiber: FiberNode) {
     if (shouldTrackEffects && fiber.alternate === null) {
       fiber.flags |= Placement
@@ -83,11 +94,20 @@ function ChildReconciler(
   }
 
   return function reconcileChidrenFibers(
+    /**
+     * 父 fiber
+     */
     returnFiber: FiberNode,
+    /**
+     * 子节点 current fiber
+     */
     currentFiber: FiberNode | null,
+    /**
+     * 子节点 react element
+     */
     newChild?: ReactElementType,
   ) {
-    // 判断当前 fiber 的类型
+    // 单节点
     if (typeof newChild === 'object' && newChild !== null) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE: {
@@ -97,11 +117,13 @@ function ChildReconciler(
         }
         default:
           if (__DEV__) {
-            console.warn('reconcileChidrenFibers: 未实现的 reconcile 类型')
+            console.warn('(reconcileChidrenFibers)', '未实现的 reconcile 类型')
           }
           break
       }
     }
+
+    // TODO: 多节点 ul > li * 3
 
     // 文本节点 HostText
     if (typeof newChild === 'string' || typeof newChild === 'number') {

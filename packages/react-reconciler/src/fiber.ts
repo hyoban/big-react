@@ -9,7 +9,9 @@ export class FiberNode {
   // 实例属性
   tag: WorkTag
   /**
-   * 对于 FunctionComponent，() => {} 函数本身就是其 type
+   * 从 ReactElement 中取得 type
+   * 对于 FunctionComponent，() => {} 函数本身就是其 type。
+   * 对于 div DOM，type 就是 'div'。
    */
   type: any
   key: Key
@@ -134,14 +136,20 @@ export function createWorkInProgress(
   return wip
 }
 
+/**
+ * 根据 ReactElement 创建 FiberNode
+ * @param element
+ * @returns
+ */
 export function createFiberFromElement(element: ReactElementType): FiberNode {
   const { type, key, props } = element
+
   let fiberTag: WorkTag = FunctionComponent
 
   if (typeof type === 'string') {
     fiberTag = HostComponent
   } else if (typeof type !== 'function' && __DEV__) {
-    console.warn('createFiberFromElement: 未定义的 type 类型')
+    console.warn('createFiberFromElement', '未定义的 type 类型', element)
   }
 
   const fiber = new FiberNode(fiberTag, props, key)

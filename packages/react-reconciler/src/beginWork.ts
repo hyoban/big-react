@@ -18,12 +18,13 @@ export function beginWork(wip: FiberNode) {
     case HostComponent:
       return updateHostComponent(wip)
     case HostText:
+      // 文本节点没有子节点，因此‘递’到底了
       return null
     case FunctionComponent:
       return updateFunctionComponent(wip)
     default:
       if (__DEV__) {
-        console.warn('beginWork: 未知的 fiberNode 类型')
+        console.warn('(beginWork)', '未实现的类型', wip)
       }
   }
   return null
@@ -37,6 +38,7 @@ function updateFunctionComponent(wip: FiberNode) {
 }
 
 function updateHostRoot(wip: FiberNode) {
+  // 对于 HostRoot
   // 1. 计算状态最新值
   // 2. 创建子 fiberNode
 
@@ -44,10 +46,10 @@ function updateHostRoot(wip: FiberNode) {
   const baseState = wip.memoizedState
   const updateQueue = wip.updateQueue as UpdateQueue<Element>
   const pending = updateQueue.shared.pending
-  // 计算完成后 pending 就没有用了
+  // 已经开始计算了，计算完成后 pending 就没有用了
   updateQueue.shared.pending = null
-  // 最新状态，传入的 ReactElement
   const { memoizedState } = processUpdateQueue(baseState, pending)
+  // 最新状态，也就是传入的 ReactElement
   wip.memoizedState = memoizedState
 
   const nextChildren = wip.memoizedState
@@ -56,8 +58,10 @@ function updateHostRoot(wip: FiberNode) {
 }
 
 function updateHostComponent(wip: FiberNode) {
-  // 不存在更新
+  // 对于 HostComponent，不会触发更新
   // 1. 创建子 fiberNode
+
+  // children 从 react element 的 props 中取
   const nextProps = wip.pendingProps
   const nextChildren = nextProps.children
   reconcileChidren(wip, nextChildren)
@@ -65,11 +69,15 @@ function updateHostComponent(wip: FiberNode) {
 }
 
 function reconcileChidren(wip: FiberNode, children?: ReactElementType) {
+  // 获取父节点的 current fiberNode 来对比，返回 wip 的子 fiberNode
   const current = wip.alternate
   if (current === null) {
     // 首次渲染
     wip.child = mountChildFibers(wip, null, children)
   } else {
+    // 首次渲染过程中，只有 HostRoot 会走到这里
+    // 因为在 renderRoot 时，通过创建 wip，使得它是唯一的存在 wip 和 current 的 fiberNode
+
     // 更新
     wip.child = reconcileChildFibers(wip, current.child, children)
   }
