@@ -5,10 +5,6 @@ import type { FiberNode } from './fiber'
 import { NoFlags, Update } from './fiberFlags'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags'
 
-function markUpdate(fiber: FiberNode) {
-  fiber.flags |= Update
-}
-
 /**
  * 递归中的归。首次渲染时构建离屏 DOM 树。
  * @param wip
@@ -109,4 +105,12 @@ function bubbleProperties(wip: FiberNode) {
     child = child.sibling
   }
   wip.subtreeFlags |= subtreeFlags
+}
+
+/**
+ * 为 fiber 设置更新标记
+ * @param fiber
+ */
+function markUpdate(fiber: FiberNode) {
+  fiber.flags |= Update
 }

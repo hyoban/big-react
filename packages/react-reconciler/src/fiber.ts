@@ -61,6 +61,9 @@ export class FiberNode {
    */
   subtreeFlags: Flags
   updateQueue: unknown
+  /**
+   * 存储此节点下所有需要删除的子节点
+   */
   deletions: FiberNode[] | null
 
   constructor(tag: WorkTag, pendingProps: Props, key: Key) {

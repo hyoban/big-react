@@ -42,14 +42,16 @@ function ChildReconciler(
             existing.return = returnFiber
             return existing
           }
+          // key 相同 type 不同，不可复用，删除旧节点
           deleteChild(returnFiber, currentFiber)
         } else {
+          // TODO: 处理多节点情况
           if (__DEV__) {
-            console.warn('还未实现的 recact 类型', element)
+            console.warn('(reconcileSingleElement)', '还未实现的 react 类型', element)
           }
         }
       } else {
-        // 删除旧节点
+        // 不可复用，删除旧节点
         deleteChild(returnFiber, currentFiber)
       }
     }
@@ -68,10 +70,12 @@ function ChildReconciler(
     if (currentFiber !== null) {
       // update
       if (currentFiber.tag === HostText) {
+        // 类型没变，复用
         const existing = useFiber(currentFiber, { content })
         existing.return = returnFiber
         return existing
       }
+      // 类型不同，比如 div 变成了 text，删除旧节点
       deleteChild(returnFiber, currentFiber)
     }
 
@@ -132,6 +136,7 @@ function ChildReconciler(
       )
     }
 
+    // 兜底情况，删除旧节点
     if (currentFiber !== null) {
       deleteChild(returnFiber, currentFiber)
     }
@@ -143,6 +148,12 @@ function ChildReconciler(
   }
 }
 
+/**
+ * 复用传入的 fiberNode
+ * @param fiber
+ * @param pendingProps
+ * @returns
+ */
 function useFiber(fiber: FiberNode, pendingProps: Props) {
   const clone = createWorkInProgress(fiber, pendingProps)
   clone.index = 0
