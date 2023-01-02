@@ -116,9 +116,10 @@ function commitRoot(root: FiberRootNode) {
   }
 
   if (__DEV__) {
-    console.warn('commitRoot', finishedWork)
+    console.warn('(commitRoot)', 'commit 阶段开始', finishedWork)
   }
 
+  // 已经被记录下来，重置
   root.finishedWork = null
 
   // 判断是否存在三个子阶段需要执行的操作
@@ -129,9 +130,11 @@ function commitRoot(root: FiberRootNode) {
     // before mutation
     // mutation
     commitMutationEffects(finishedWork)
+    // fiber 树切换
     root.current = finishedWork
     // layout
   } else {
+    // fiber 树切换
     root.current = finishedWork
   }
 }
