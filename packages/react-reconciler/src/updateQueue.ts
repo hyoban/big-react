@@ -6,6 +6,7 @@ export interface Update<State> {
 }
 
 export interface UpdateQueue<State> {
+  // 这样的结构是为了在 wip 和 current 之间共享
   shared: {
     pending: Update<State> | null
   }

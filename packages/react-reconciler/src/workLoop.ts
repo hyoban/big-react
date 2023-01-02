@@ -16,12 +16,17 @@ let workInProgress: FiberNode | null = null
  * @param root
  */
 function prepareFreshStack(root: FiberRootNode) {
+  // FiberRootNode 不能作为 wip 工作单元
   workInProgress = createWorkInProgress(root.current, {})
 }
 
+/**
+ * 连接 renderRoot 的更新流程
+ * @param fiber
+ */
 export function scheduleUpdateOnFiber(fiber: FiberNode) {
   // TODO: 调度功能
-  // 向上一直找到 fiberRootNode
+  // 触发更新未必从根节点，所以向上一直找到 fiberRootNode
   const root = markUpdateFromFiberToRoot(fiber)
   renderRoot(root)
 }
@@ -29,12 +34,12 @@ export function scheduleUpdateOnFiber(fiber: FiberNode) {
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
   let node = fiber
   let parent = node.return
+  // 正常的 fiberNode 都有 return 但是 hostRootFiber 没有 return
   while (parent !== null) {
     node = parent
     parent = node.return
   }
   if (node.tag === HostRoot) {
-    // 对于 hostRootFiber，stateNode 就是 FiberRootNode
     return node.stateNode
   }
   return null
@@ -49,7 +54,7 @@ function renderRoot(root: FiberRootNode) {
       break
     } catch (e) {
       if (__DEV__) {
-        console.warn('renderRoot', 'workLoop 发生错误', e)
+        console.warn('(renderRoot)', 'workLoop 发生错误', e)
       }
       workInProgress = null
     }

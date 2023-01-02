@@ -14,7 +14,8 @@ export class FiberNode {
   type: any
   key: Key
   /**
-   * 比如对于 HostComponent <div>，div 这个 DOM 就是其 stateNode
+   * 比如对于 HostComponent <div>，div 这个 DOM 就是其 stateNode。
+   * 对于 hostRootFiber，stateNode 就是 FiberRootNode。
    */
   stateNode: any
   ref: Ref
@@ -79,38 +80,47 @@ export class FiberNode {
 export class FiberRootNode {
   // 需要支持多种宿主环境
   container: Container
+  /**
+   * 指向 hostRootFiber
+   */
   current: FiberNode
-  // 更新完成后的 FiberNode
+  /**
+   * 更新完成后的 hostRootFiber
+   */
   finishedWork: FiberNode | null
 
   constructor(container: Container, hostRootFiber: FiberNode) {
     this.container = container
-
-    // 创建与 FiberRootNode 对应的 FiberNode 的连接
     this.current = hostRootFiber
     hostRootFiber.stateNode = this
-
     this.finishedWork = null
   }
 }
 
-export const createWorkInProgress = (
+/**
+ * 根据双缓存机制，应当返回 current 对应的 FiberNode。
+ * 对于同一个 fibernode，在多次更新时，会在双缓存中来回切换，避免重复创建。
+ * @param current
+ * @param pendingProps
+ * @returns
+ */
+export function createWorkInProgress(
   current: FiberNode,
   pendingProps: Props,
-): FiberNode => {
+): FiberNode {
   let wip = current.alternate
-  // 对于同一个 fibernode，在多次更新时，会在双缓存中来回切换，避免重复创建
 
   if (wip === null) {
     // mount
+    // 需要新建一个 FiberNode
     wip = new FiberNode(current.tag, pendingProps, current.key)
     wip.stateNode = current.stateNode
-
     wip.alternate = current
     current.alternate = wip
   } else {
     // update
     wip.pendingProps = pendingProps
+    // 清除副作用，因为可能是上次更新遗留的
     wip.flags = NoFlags
     wip.subtreeFlags = NoFlags
     wip.deletions = null
