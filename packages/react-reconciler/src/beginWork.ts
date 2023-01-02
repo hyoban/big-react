@@ -6,9 +6,12 @@ import type { UpdateQueue } from './updateQueue'
 import { processUpdateQueue } from './updateQueue'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags'
 
-// 递归中的递阶段
-export const beginWork = (wip: FiberNode) => {
-  // 比较，返回子fiberNode
+/**
+ * 递归中的递阶段，react element 和 fiber node 的比较，返回子 fiberNode
+ * @param wip
+ * @returns
+ */
+export function beginWork(wip: FiberNode) {
   switch (wip.tag) {
     case HostRoot:
       return updateHostRoot(wip)

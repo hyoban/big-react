@@ -6,55 +6,70 @@ import type { Flags } from './fiberFlags'
 import { NoFlags } from './fiberFlags'
 
 export class FiberNode {
-  type: any
+  // 实例属性
   tag: WorkTag
-  pendingProps: Props
+  /**
+   * 对于 FunctionComponent，() => {} 函数本身就是其 type
+   */
+  type: any
   key: Key
+  /**
+   * 比如对于 HostComponent <div>，div 这个 DOM 就是其 stateNode
+   */
   stateNode: any
   ref: Ref
 
+  // 构成树状结构，表示节点之间关系
+  /**
+   * 父节点，return 描述了工作顺序
+   */
   return: FiberNode | null
   sibling: FiberNode | null
   child: FiberNode | null
+  /**
+   * 同级 FiberNode 的索引
+   */
   index: number
 
+  // 作为工作单元
+  /**
+   * 将要发生变化的 props
+   */
+  pendingProps: Props
+  /**
+   * 工作结束后确定下的 props
+   */
   memoizedProps: Props | null
   memoizedState: any
+  /**
+   * 用于在 wip 和 current 之间切换
+   */
   alternate: FiberNode | null
+  /**
+   * 副作用，更新标记
+   */
   flags: Flags
   subtreeFlags: Flags
   updateQueue: unknown
   deletions: FiberNode[] | null
 
   constructor(tag: WorkTag, pendingProps: Props, key: Key) {
-    // 实例属性
     this.tag = tag
     this.key = key
-    this.ref = null
-    // HostComponent <div> div DOM
     this.stateNode = null
-    // FunctionComponent () => {}
     this.type = null
+    this.ref = null
 
-    // 构成树状结构
-    // 父节点，return 描述了工作顺序
     this.return = null
     this.sibling = null
     this.child = null
-    // 同级 FiberNode 的索引
     this.index = 0
 
-    // 作为工作单元
-    // 工作开始前的 props
     this.pendingProps = pendingProps
-    // 工作结束后确定下的 props
     this.memoizedProps = null
     this.memoizedState = null
     this.updateQueue = null
-
-    // 用于在 wip 和 current 之间切换
     this.alternate = null
-    // 副作用，更新标记
     this.flags = NoFlags
     this.subtreeFlags = NoFlags
     this.deletions = null

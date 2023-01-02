@@ -9,9 +9,12 @@ function markUpdate(fiber: FiberNode) {
   fiber.flags |= Update
 }
 
-export const completeWork = (wip: FiberNode) => {
-  // 递归中的归
-
+/**
+ * 递归中的归
+ * @param wip
+ * @returns
+ */
+export function completeWork(wip: FiberNode) {
   const newProps = wip.pendingProps
   const current = wip.alternate
   switch (wip.tag) {

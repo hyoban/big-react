@@ -6,9 +6,15 @@ import { createWorkInProgress } from './fiber'
 import { MutationMask, NoFlags } from './fiberFlags'
 import { HostRoot } from './workTags'
 
-// 正在工作的 fiberNode
+/**
+ * 正在工作的 fiberNode
+ */
 let workInProgress: FiberNode | null = null
 
+/**
+ * 初始化，让 wip 指向需要遍历的第一个 fiberNode
+ * @param root
+ */
 function prepareFreshStack(root: FiberRootNode) {
   workInProgress = createWorkInProgress(root.current, {})
 }
@@ -35,7 +41,6 @@ function markUpdateFromFiberToRoot(fiber: FiberNode) {
 }
 
 function renderRoot(root: FiberRootNode) {
-  // 初始化开始工作的 fiberNode
   prepareFreshStack(root)
 
   do {
@@ -44,7 +49,7 @@ function renderRoot(root: FiberRootNode) {
       break
     } catch (e) {
       if (__DEV__) {
-        console.warn('workLoop发生错误', e)
+        console.warn('renderRoot', 'workLoop 发生错误', e)
       }
       workInProgress = null
     }
@@ -55,6 +60,47 @@ function renderRoot(root: FiberRootNode) {
 
   // 根据 flag 提交更新
   commitRoot(root)
+}
+
+function workLoop() {
+  while (workInProgress !== null) {
+    performUnitOfWork(workInProgress)
+  }
+}
+
+function performUnitOfWork(fiber: FiberNode) {
+  // 可能是子 fiberNode，或者是 null
+  const next = beginWork(fiber)
+  // 工作完成，props 已经确定
+  fiber.memoizedProps = fiber.pendingProps
+
+  if (next === null) {
+    // 递归中的归阶段，此时没有子节点，先遍历兄弟节点
+    completeUnitOfWork(fiber)
+  } else {
+    // 按 DFS 不断向下执行，直到叶子节点
+    workInProgress = next
+  }
+}
+
+function completeUnitOfWork(fiber: FiberNode) {
+  let node: FiberNode | null = fiber
+
+  do {
+    // 完成当前节点的“归”阶段
+    completeWork(node)
+
+    const sibling = node.sibling
+    if (sibling !== null) {
+      workInProgress = sibling
+      // 别着急 complete，先返回，开启兄弟节点的“递”阶段
+      return
+    }
+
+    // 完成父节点的“归”阶段
+    node = node.return
+    workInProgress = node
+  } while (node !== null)
 }
 
 function commitRoot(root: FiberRootNode) {
@@ -82,41 +128,4 @@ function commitRoot(root: FiberRootNode) {
   } else {
     root.current = finishedWork
   }
-}
-
-function workLoop() {
-  while (workInProgress !== null) {
-    performUnitOfWork(workInProgress)
-  }
-}
-
-function performUnitOfWork(fiber: FiberNode) {
-  const next = beginWork(fiber)
-  fiber.memoizedProps = fiber.pendingProps
-
-  if (next === null) {
-    // 递归中的归阶段
-    completeUnitOfWork(fiber)
-  } else {
-    // 按 DFS 不断向下执行，直到叶子节点
-    workInProgress = next
-  }
-}
-
-function completeUnitOfWork(fiber: FiberNode) {
-  let node: FiberNode | null = fiber
-
-  do {
-    completeWork(node)
-    const sibling = node.sibling
-
-    if (sibling !== null) {
-      workInProgress = sibling
-      // 别着急继续返回，先开启兄弟节点的“递”阶段
-      return
-    }
-    // 完成父节点的“归”阶段
-    node = node.return
-    workInProgress = node
-  } while (node !== null)
 }
