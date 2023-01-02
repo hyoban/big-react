@@ -17,6 +17,9 @@ interface Hook {
    * 保存 hook 自身的状态
    */
   memoizedState: any
+  /**
+   * useState 能够触发更新，接入更新流程
+   */
   updateQueue: unknown
   /**
    * 指向下一个 hook
@@ -30,6 +33,104 @@ const HooksDispatcherOnMount: Dispatcher = {
 
 const HooksDispatcherOnUpdate: Dispatcher = {
   useState: updateState,
+}
+
+export function renderWithHooks(wip: FiberNode) {
+  currentlyRenderingFiber = wip
+  // 重置，存储当前 fiber 的 hooks
+  wip.memoizedState = null
+
+  const current = wip.alternate
+  if (current !== null) {
+    // update
+    currentDispatcher.current = HooksDispatcherOnUpdate
+  } else {
+    // mount
+    currentDispatcher.current = HooksDispatcherOnMount
+  }
+
+  const Component = wip.type
+  const props = wip.pendingProps
+  const children = Component(props)
+
+  currentlyRenderingFiber = null
+  return children
+}
+
+/**
+ * mount 时，useState 的实现
+ * @param initialState
+ * @returns
+ */
+function mountState<State>(
+  initialState: State | (() => State),
+): [State, Dispatch<State>] {
+  const hook = mountWorkInProgressHook()
+
+  // 计算初始状态，保存在 hook 中
+  let memoizedState
+  if (initialState instanceof Function) {
+    memoizedState = initialState()
+  } else {
+    memoizedState = initialState
+  }
+  hook.memoizedState = memoizedState
+
+  const queue = createUpdateQueue<State>()
+  hook.updateQueue = queue
+
+  // NOTE: dispatch 方法是可以不在 FC 调用中的
+  // 这里预置了 fiber 和 queue，用户只需要传递 action
+  // @ts-expect-error xxx
+  const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue)
+  queue.dispatch = dispatch
+
+  return [memoizedState, dispatch]
+}
+
+/**
+ * 让 useState 返回的 dispatch 接入的更新，从当前 fiber 触发
+ * @param fiber
+ * @param updateQueue
+ * @param action
+ */
+function dispatchSetState<State>(
+  fiber: FiberNode,
+  updateQueue: UpdateQueue<State>,
+  action: Action<State>,
+) {
+  const update = createUpdate(action)
+  enqueueUpdate(updateQueue, update)
+  scheduleUpdateOnFiber(fiber)
+}
+
+/**
+ * 获取 mount 时 hook 的数据
+ * @returns
+ */
+function mountWorkInProgressHook(): Hook {
+  // 不存在，首先创建一个
+  const hook: Hook = {
+    memoizedState: null,
+    updateQueue: null,
+    next: null,
+  }
+
+  if (workInProgressHook === null) {
+    // mount 时第一个 hook
+    if (currentlyRenderingFiber === null) {
+      throw new Error('hooks can only be called inside the body of a function component.')
+    } else {
+      workInProgressHook = hook
+      // 记录数据到 fiber 上
+      currentlyRenderingFiber.memoizedState = workInProgressHook
+    }
+  } else {
+    // mount 时以后的 hook，串联到链表上
+    workInProgressHook.next = hook
+    workInProgressHook = hook
+  }
+  return workInProgressHook
 }
 
 function updateState<State>(): [State, Dispatch<State>] {
@@ -82,84 +183,6 @@ function updateWorkInProgressHook(): Hook {
   } else {
     // mount 时以后的 hook
     workInProgressHook = workInProgressHook.next = newHook
-  }
-  return workInProgressHook
-}
-
-export function renderWithHooks(wip: FiberNode) {
-  currentlyRenderingFiber = wip
-  // 重置，存储当前 fiber 的 hooks
-  wip.memoizedState = null
-
-  const current = wip.alternate
-  if (current !== null) {
-    // update
-    currentDispatcher.current = HooksDispatcherOnUpdate
-  } else {
-    // mount
-    currentDispatcher.current = HooksDispatcherOnMount
-  }
-
-  const Component = wip.type
-  const props = wip.pendingProps
-  const children = Component(props)
-
-  currentlyRenderingFiber = null
-  return children
-}
-
-function mountState<State>(
-  initialState: State | (() => State),
-): [State, Dispatch<State>] {
-  const hook = mountWorkInProgressHook()
-
-  let memoizedState
-  if (initialState instanceof Function) {
-    memoizedState = initialState()
-  } else {
-    memoizedState = initialState
-  }
-
-  hook.memoizedState = memoizedState
-
-  const queue = createUpdateQueue<State>()
-  hook.updateQueue = queue
-
-  // @ts-expect-error TODO: fix this
-  const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue)
-  queue.dispatch = dispatch
-
-  return [memoizedState, dispatch]
-}
-
-function dispatchSetState<State>(
-  fiber: FiberNode,
-  updateQueue: UpdateQueue<State>,
-  action: Action<State>,
-) {
-  const update = createUpdate(action)
-  enqueueUpdate(updateQueue, update)
-  scheduleUpdateOnFiber(fiber)
-}
-
-function mountWorkInProgressHook(): Hook {
-  const hook: Hook = {
-    memoizedState: null,
-    updateQueue: null,
-    next: null,
-  }
-
-  if (workInProgressHook === null) {
-    // mount 时第一个 hook
-    if (currentlyRenderingFiber === null) {
-      throw new Error('请在函数组件中调用 hooks')
-    } else {
-      workInProgressHook = hook
-      currentlyRenderingFiber.memoizedState = workInProgressHook
-    }
-  } else {
-    // mount 时以后的 hook
-    workInProgressHook = workInProgressHook.next = hook
   }
   return workInProgressHook
 }

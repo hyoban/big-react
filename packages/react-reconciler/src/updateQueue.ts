@@ -10,6 +10,9 @@ export interface UpdateQueue<State> {
   shared: {
     pending: Update<State> | null
   }
+  /**
+   * 保存 hooks 的 dispatch
+   */
   dispatch: Dispatch<State> | null
 }
 
