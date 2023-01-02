@@ -1,5 +1,5 @@
 import type { Container } from 'hostConfig'
-import { appendChildToContainer, commitUpdate, removeChild } from 'hostConfig'
+import { appendChildToContainer, commitTextUpdate, removeChild } from 'hostConfig'
 import type { FiberNode, FiberRootNode } from './fiber'
 import { ChildDeletion, MutationMask, NoFlags, Placement, Update } from './fiberFlags'
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags'
@@ -56,30 +56,46 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
   }
 }
 
+function commitUpdate(fiber: FiberNode) {
+  switch (fiber.tag) {
+    case HostText: {
+      const text = fiber.memoizedProps.content
+      return commitTextUpdate(fiber.stateNode, text)
+    }
+    default: {
+      if (__DEV__) {
+        console.warn('(commitUpdate)', '未实现的 update 类型', fiber)
+      }
+    }
+  }
+}
+
 function commitDeletion(childToDelete: FiberNode) {
+  // 记录遍历过程中要子树中最高的节点，用于后续的删除
   let rootHostNode: FiberNode | null = null
+
   commitNestedComponent(childToDelete, (unmountFiber) => {
     switch (unmountFiber.tag) {
       case HostComponent: {
         if (rootHostNode === null) {
           rootHostNode = unmountFiber
         }
-        // TODO: 解绑 ref
+        // TODO: 解绑 ref，执行 useEffect 的 cleanup
         return
       }
       case HostText: {
         if (rootHostNode === null) {
           rootHostNode = unmountFiber
         }
-        break
+        return
       }
       case FunctionComponent: {
-        // TODO: 处理 useEffect
-        break
+        // TODO: 执行 useEffect 的 cleanup
+        return
       }
       default: {
         if (__DEV__) {
-          console.warn('commitDeletion: 未处理的 unmount 类型', unmountFiber)
+          console.warn('(commitDeletion)', '未处理的 unmount 类型', unmountFiber)
         }
       }
     }
@@ -87,7 +103,7 @@ function commitDeletion(childToDelete: FiberNode) {
     if (rootHostNode !== null) {
       const hostParent = getHostParent(rootHostNode)
       if (hostParent !== null) {
-        removeChild(rootHostNode.stateNode, hostParent)
+        removeChild(hostParent, rootHostNode.stateNode)
       }
     }
     childToDelete.return = null
@@ -95,6 +111,12 @@ function commitDeletion(childToDelete: FiberNode) {
   })
 }
 
+/**
+ * DFS 递归子树
+ * @param root 子树的根节点
+ * @param onCommitUnmount 递归时执行的操作
+ * @returns
+ */
 function commitNestedComponent(
   root: FiberNode,
   onCommitUnmount: (fiber: FiberNode) => void,

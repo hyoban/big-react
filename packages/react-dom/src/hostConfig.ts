@@ -1,5 +1,3 @@
-import type { FiberNode } from 'react-reconciler/src/fiber'
-import { HostText } from 'react-reconciler/src/workTags'
 import type { Props } from 'shared/ReactTypes'
 import type { DOMElement } from './SyntheticEvent'
 import { updateFiberProps } from './SyntheticEvent'
@@ -29,28 +27,13 @@ export const createTextInstance = (
 
 export const appendChildToContainer = appendInitialChild
 
-export const commitUpdate = (fiber: FiberNode) => {
-  switch (fiber.tag) {
-    case HostText: {
-      const text = fiber.memoizedProps.content
-      return commitTextUpdate(fiber.stateNode, text)
-    }
-    default: {
-      if (__DEV__) {
-        console.warn('commitUpdate: 未实现的 update 类型', fiber)
-      }
-      break
-    }
-  }
-}
-
 export function commitTextUpdate(textInstance: TextInstance, content: string) {
   textInstance.textContent = content
 }
 
 export function removeChild(
-  child: Instance | TextInstance,
   container: Container,
+  child: Instance | TextInstance,
 ) {
   container.removeChild(child)
 }
