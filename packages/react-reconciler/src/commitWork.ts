@@ -99,16 +99,16 @@ function commitDeletion(childToDelete: FiberNode) {
         }
       }
     }
-
-    if (rootHostNode !== null) {
-      const hostParent = getHostParent(rootHostNode)
-      if (hostParent !== null) {
-        removeChild(hostParent, rootHostNode.stateNode)
-      }
-    }
-    childToDelete.return = null
-    childToDelete.child = null
   })
+
+  if (rootHostNode !== null) {
+    const hostParent = getHostParent(rootHostNode)
+    if (hostParent !== null) {
+      removeChild(hostParent, (rootHostNode as FiberNode).stateNode)
+    }
+  }
+  childToDelete.return = null
+  childToDelete.child = null
 }
 
 /**

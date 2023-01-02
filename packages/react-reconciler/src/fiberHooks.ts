@@ -54,6 +54,8 @@ export function renderWithHooks(wip: FiberNode) {
   const children = Component(props)
 
   currentlyRenderingFiber = null
+  workInProgressHook = null
+  currentHook = null
   return children
 }
 
@@ -83,6 +85,7 @@ function mountState<State>(
   // 这里预置了 fiber 和 queue，用户只需要传递 action
   // @ts-expect-error xxx
   const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue)
+  // 存到 queue 中，在 update 时，作为更新函数返回
   queue.dispatch = dispatch
 
   return [memoizedState, dispatch]
@@ -133,6 +136,10 @@ function mountWorkInProgressHook(): Hook {
   return workInProgressHook
 }
 
+/**
+ * update 时，useState 的实现
+ * @returns
+ */
 function updateState<State>(): [State, Dispatch<State>] {
   const hook = updateWorkInProgressHook()
 
@@ -152,6 +159,7 @@ function updateWorkInProgressHook(): Hook {
   // TODO: render 过程中触发的更新
   let nextCurrentHook: Hook | null
   if (currentHook === null) {
+    // update 时第一个 hook
     const current = currentlyRenderingFiber?.alternate
     if (current && current !== null) {
       nextCurrentHook = current.memoizedState
@@ -163,7 +171,11 @@ function updateWorkInProgressHook(): Hook {
   }
 
   if (nextCurrentHook === null) {
-    throw new Error(`组件 ${currentlyRenderingFiber?.type} 本次执行和上次相比 hooks 数量不一致`)
+    // nextCurrentHook 不存在，说明 hooks 数量不一致，因为不是 mount，currentlyRenderingFiber 一定存在
+    // mount/update u1, u2, u3
+    // update       u1, u2, u3, u4
+    // 经过 nextCurrentHook = currentHook.next 导致 nextCurrentHook 为 null
+    throw new Error('Rendered more hooks than during the previous render.')
   }
 
   currentHook = nextCurrentHook
@@ -173,16 +185,17 @@ function updateWorkInProgressHook(): Hook {
     next: null,
   }
   if (workInProgressHook === null) {
-    // mount 时第一个 hook
+    // update 时第一个 hook
     if (currentlyRenderingFiber === null) {
-      throw new Error('请在函数组件中调用 hooks')
+      throw new Error('hooks can only be called inside the body of a function component.')
     } else {
       workInProgressHook = newHook
       currentlyRenderingFiber.memoizedState = workInProgressHook
     }
   } else {
-    // mount 时以后的 hook
-    workInProgressHook = workInProgressHook.next = newHook
+    // update 时以后的 hook
+    workInProgressHook.next = newHook
+    workInProgressHook = newHook
   }
   return workInProgressHook
 }
