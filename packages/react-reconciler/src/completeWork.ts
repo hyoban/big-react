@@ -17,11 +17,18 @@ export function completeWork(wip: FiberNode) {
     case HostComponent:
       if (current !== null && current.stateNode) {
         // update
-        // TODO: 比较各种 props 是否变化，记录更新 flags
+
+        // TODO: 应该比较各种 props 是否变化，记录更新 flags，然后在 commit 阶段再更新
+        // fiberNode.updateQueue = [
+        // 'className', 'xxx', 'style', 'xxx'
+        // ]
+        // 变的属性名，变的属性值，变的属性名，变的属性值
+
+        // 这里的实现是为了省事
         updateFiberProps(current.stateNode, newProps)
       } else {
         // mount
-        // 构建离屏 DOM，同时记录 props
+        // 构建离屏 DOM，同时记录 props 到 DOM 上
         const instance = createInstance(wip.type, newProps)
         // 将子 fiber 创建好的 DOM 插入到 instance 中
         appendAllChildren(instance, wip)

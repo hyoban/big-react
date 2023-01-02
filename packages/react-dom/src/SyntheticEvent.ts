@@ -1,42 +1,133 @@
 import type { Container } from 'hostConfig'
 import type { Props } from 'shared/ReactTypes'
 
+/**
+ * 将 fiber 的 props 保存在 dom 上的 key
+ */
 export const elementPropsKey = '__props'
+
+export interface DOMElement extends Element {
+  [elementPropsKey]: Props
+}
+
 const validEventTypeList = ['click']
 
 type EventCallback = (e: Event) => void
-
-interface SyntheticEvent extends Event {
-  __stopPropagation: boolean
-}
 
 interface Paths {
   capture: EventCallback[]
   bubble: EventCallback[]
 }
 
-export interface DOMElement extends Element {
-  [elementPropsKey]: Props
+interface SyntheticEvent extends Event {
+  __stopPropagation: boolean
 }
 
-// dom[xxx] = reactElemnt props
+/**
+ * 将 props 保存到 dom 上
+ * @param node
+ * @param props
+ */
 export function updateFiberProps(node: DOMElement, props: Props) {
   node[elementPropsKey] = props
 }
 
 export function initEvent(container: Container, eventType: string) {
   if (!validEventTypeList.includes(eventType)) {
-    console.warn('当前不支持', eventType, '事件')
+    console.warn('initEvent', '当前不支持', eventType, '事件')
     return
   }
-  if (__DEV__) {
-    console.warn('初始化事件：', eventType)
-  }
+  // 在 container 上绑定事件
   container.addEventListener(eventType, (e) => {
     dispatchEvent(container, eventType, e)
   })
 }
 
+function dispatchEvent(container: Container, eventType: string, e: Event) {
+  const targetElement = e.target
+
+  if (targetElement === null) {
+    console.warn('事件不存在 target', e)
+    return
+  }
+
+  const { bubble, capture } = collectPaths(
+    targetElement as DOMElement,
+    container,
+    eventType,
+  )
+
+  const se = createSyntheticEvent(e)
+
+  // 遍历 captue
+  triggerEventFlow(capture, se)
+
+  if (!se.__stopPropagation) {
+    // 遍历 bubble
+    triggerEventFlow(bubble, se)
+  }
+}
+
+/**
+ * 收集沿途的事件
+ * @param targetElement
+ * @param container
+ * @param eventType
+ * @returns
+ */
+function collectPaths(
+  targetElement: DOMElement,
+  container: Container,
+  eventType: string,
+) {
+  const paths: Paths = {
+    capture: [],
+    bubble: [],
+  }
+
+  while (targetElement && targetElement !== container) {
+    const elementProps = targetElement[elementPropsKey]
+    if (elementProps) {
+      const callbackNameList = getEventCallbackNameFromEventType(eventType)
+      if (callbackNameList) {
+        callbackNameList.forEach((callbackName, i) => {
+          const eventCallback = elementProps[callbackName]
+          if (eventCallback) {
+            if (i === 0) {
+              // 根据 capture 和 bubble 的调用顺序，这里需要反向插入
+              paths.capture.unshift(eventCallback)
+            } else {
+              paths.bubble.push(eventCallback)
+            }
+          }
+        })
+      }
+    }
+    // 向上收集
+    targetElement = targetElement.parentNode as DOMElement
+  }
+  return paths
+}
+
+/**
+ * click -> onClickCapture onClick
+ * @param eventType
+ * @returns
+ */
+function getEventCallbackNameFromEventType(
+  eventType: string,
+): string[] | undefined {
+  return {
+    click: ['onClickCapture', 'onClick'],
+  }[eventType]
+}
+
+/**
+ * 构造合成事件。
+ * 因为冒泡就是模拟实现的，所以为了实现停止冒泡需要构造合成事件
+ * @param e
+ * @returns
+ */
 function createSyntheticEvent(e: Event) {
   const syntheticEvent = e as SyntheticEvent
   syntheticEvent.__stopPropagation = false
@@ -51,32 +142,6 @@ function createSyntheticEvent(e: Event) {
   return syntheticEvent
 }
 
-function dispatchEvent(container: Container, eventType: string, e: Event) {
-  const targetElement = e.target
-
-  if (targetElement === null) {
-    console.warn('事件不存在target', e)
-    return
-  }
-
-  // 1. 收集沿途的事件
-  const { bubble, capture } = collectPaths(
-    targetElement as DOMElement,
-    container,
-    eventType,
-  )
-  // 2. 构造合成事件
-  const se = createSyntheticEvent(e)
-
-  // 3. 遍历captue
-  triggerEventFlow(capture, se)
-
-  if (!se.__stopPropagation) {
-    // 4. 遍历bubble
-    triggerEventFlow(bubble, se)
-  }
-}
-
 function triggerEventFlow(paths: EventCallback[], se: SyntheticEvent) {
   for (let i = 0; i < paths.length; i++) {
     const callback = paths[i]
@@ -86,47 +151,4 @@ function triggerEventFlow(paths: EventCallback[], se: SyntheticEvent) {
       break
     }
   }
-}
-
-function getEventCallbackNameFromEventType(
-  eventType: string,
-): string[] | undefined {
-  return {
-    click: ['onClickCapture', 'onClick'],
-  }[eventType]
-}
-
-function collectPaths(
-  targetElement: DOMElement,
-  container: Container,
-  eventType: string,
-) {
-  const paths: Paths = {
-    capture: [],
-    bubble: [],
-  }
-
-  while (targetElement && targetElement !== container) {
-    // 收集
-    const elementProps = targetElement[elementPropsKey]
-    if (elementProps) {
-      // click -> onClick onClickCapture
-      const callbackNameList = getEventCallbackNameFromEventType(eventType)
-      if (callbackNameList) {
-        callbackNameList.forEach((callbackName, i) => {
-          const eventCallback = elementProps[callbackName]
-          if (eventCallback) {
-            if (i === 0) {
-              // capture
-              paths.capture.unshift(eventCallback)
-            } else {
-              paths.bubble.push(eventCallback)
-            }
-          }
-        })
-      }
-    }
-    targetElement = targetElement.parentNode as DOMElement
-  }
-  return paths
 }
