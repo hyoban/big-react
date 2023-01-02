@@ -60,10 +60,11 @@ function renderRoot(root: FiberRootNode) {
     }
   } while (true)
 
+  // 递归过程结束，alterate 中已经完整的 fiber 树
   const finishedWork = root.current.alternate
   root.finishedWork = finishedWork
 
-  // 根据 flag 提交更新
+  // 根据 flag 提交更新，执行 DOM 操作
   commitRoot(root)
 }
 

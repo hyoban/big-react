@@ -52,6 +52,9 @@ export class FiberNode {
    * 副作用，更新标记
    */
   flags: Flags
+  /**
+   * 子树中包含的副作用，更新标记
+   */
   subtreeFlags: Flags
   updateQueue: unknown
   deletions: FiberNode[] | null

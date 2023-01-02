@@ -10,7 +10,7 @@ function markUpdate(fiber: FiberNode) {
 }
 
 /**
- * 递归中的归
+ * 递归中的归。首次渲染时构建离屏 DOM 树。
  * @param wip
  * @returns
  */
@@ -27,8 +27,9 @@ export function completeWork(wip: FiberNode) {
         // mount
         // 构建离屏 DOM，同时记录 props
         const instance = createInstance(wip.type, newProps)
-        // 将 DOM 插入 DOM 树中
+        // 将子 fiber 创建好的 DOM 插入到 instance 中
         appendAllChildren(instance, wip)
+        // 将当前插入完成的更大的 DOM 树位置记录在 FiberNode 中
         wip.stateNode = instance
       }
       bubbleProperties(wip)
@@ -44,6 +45,7 @@ export function completeWork(wip: FiberNode) {
       } else {
         // 构建离屏 DOM
         const instance = createTextInstance(newProps.content)
+        // hostText 不存在 child，不需要挂载
         wip.stateNode = instance
       }
       bubbleProperties(wip)
@@ -56,13 +58,15 @@ export function completeWork(wip: FiberNode) {
       return null
     default:
       if (__DEV__) {
-        console.warn('completeWork: 未处理的 CompleteWork 类型')
+        console.warn('(completeWork)', ': 未处理的 CompleteWork 情况')
       }
   }
 }
 
 function appendAllChildren(parent: Container, wip: FiberNode) {
   // 插入的应该是组件中的实际节点
+  // 比如对于函数组件，应该插入的是函数组件中经过递归找到的实际的节点
+
   let node = wip.child
 
   while (node !== null) {
@@ -73,6 +77,7 @@ function appendAllChildren(parent: Container, wip: FiberNode) {
       node = node.child
       continue
     }
+
     if (node === wip) {
       return
     }
@@ -88,6 +93,10 @@ function appendAllChildren(parent: Container, wip: FiberNode) {
   }
 }
 
+/**
+ * 将子节点 child 和 sibling 的 flags 向上收集
+ * @param wip
+ */
 function bubbleProperties(wip: FiberNode) {
   let subtreeFlags = NoFlags
   let child = wip.child
