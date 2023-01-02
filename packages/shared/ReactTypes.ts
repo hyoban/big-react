@@ -19,5 +19,7 @@ export interface ReactElementType {
   __mark: string
 }
 
-// 支持传递一个函数，函数的返回值作为新的 state
+/**
+ * 支持传递一个值或者函数，函数的返回值作为新的 state
+ */
 export type Action<State> = State | ((prevState: State) => State)

@@ -12,32 +12,54 @@ export interface UpdateQueue<State> {
   dispatch: Dispatch<State> | null
 }
 
-export const createUpdate = <State>(action: Action<State>): Update<State> => {
+/**
+ * Update 实例化方法
+ * @param action
+ * @returns
+ */
+export function createUpdate<State>(
+  action: Action<State>,
+): Update<State> {
   return {
     action,
   }
 }
 
-export const createUpdateQueue = <State>() => {
+/**
+ * UpdateQueue 实例化方法
+ * @returns
+ */
+export function createUpdateQueue<State>(): UpdateQueue<State> {
   return {
     shared: {
       pending: null,
     },
     dispatch: null,
-  } as UpdateQueue<State>
+  }
 }
 
-export const enqueueUpdate = <State>(
+/**
+ * 往 updateQueue 中添加一个 update
+ * @param updateQueue
+ * @param update
+ */
+export function enqueueUpdate<State>(
   updateQueue: UpdateQueue<State>,
   update: Update<State>,
-) => {
+) {
   updateQueue.shared.pending = update
 }
 
-export const processUpdateQueue = <State>(
+/**
+ * updateQueue 消费 update
+ * @param baseState 初始状态
+ * @param pendingUpdate 消费的 update
+ * @returns 全新的状态
+ */
+export function processUpdateQueue<State>(
   baseState: State,
   pendingUpdate: Update<State> | null,
-): { memoizedState: State } => {
+): { memoizedState: State } {
   const result: ReturnType<typeof processUpdateQueue<State>> = {
     memoizedState: baseState,
   }
