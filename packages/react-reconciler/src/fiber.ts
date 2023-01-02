@@ -43,6 +43,10 @@ export class FiberNode {
    * 工作结束后确定下的 props
    */
   memoizedProps: Props | null
+  /**
+   * 存储消费后的状态。
+   * 对于 FC 来说，它指向 hooks 链表的第一个 hook。
+   */
   memoizedState: any
   /**
    * 用于在 wip 和 current 之间切换

@@ -13,8 +13,14 @@ let currentHook: Hook | null = null
 const { currentDispatcher } = internals
 
 interface Hook {
+  /**
+   * 保存 hook 自身的状态
+   */
   memoizedState: any
   updateQueue: unknown
+  /**
+   * 指向下一个 hook
+   */
   next: Hook | null
 }
 
