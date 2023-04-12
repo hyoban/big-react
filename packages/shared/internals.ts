@@ -1,4 +1,4 @@
-import * as React from 'react'
+import * as React from "react"
 
 /**
  * 为 react 和 react-reconciler 之间进行中转
