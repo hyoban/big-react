@@ -8,7 +8,7 @@ export interface ReactElementType {
    * 内部字段，用于标识当前对象是一个 ReactElement。
    * 需要通过 Symbol 来保证唯一性
    */
-  $$typeof: Symbol | number
+  $$typeof: symbol | number
   type: ElementType
   props: Props
   key: Key
