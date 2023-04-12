@@ -30,7 +30,7 @@ function ChildReconciler(
 		}
 	}
 
-	function deleteRemaingChildren(
+	function deleteRemainingChildren(
 		returnFiber: FiberNode,
 		currentFirstChild: FiberNode | null
 	) {
@@ -61,11 +61,11 @@ function ChildReconciler(
 						const existing = useFiber(currentFiber, element.props)
 						existing.return = returnFiber
 						// 当前节点可以复用，标记其它的节点为删除
-						deleteRemaingChildren(returnFiber, currentFiber.sibling)
+						deleteRemainingChildren(returnFiber, currentFiber.sibling)
 						return existing
 					}
 					// key 相同 type 不同，不可能存在复用可能性，删除旧节点
-					deleteRemaingChildren(returnFiber, currentFiber)
+					deleteRemainingChildren(returnFiber, currentFiber)
 					break
 				} else {
 					// TODO: 处理多节点情况
@@ -103,7 +103,7 @@ function ChildReconciler(
 				// 类型没变，复用
 				const existing = useFiber(currentFiber, { content })
 				existing.return = returnFiber
-				deleteRemaingChildren(returnFiber, currentFiber.sibling)
+				deleteRemainingChildren(returnFiber, currentFiber.sibling)
 				return existing
 			}
 			// 类型不同，比如 div 变成了 text，删除旧节点
@@ -129,7 +129,7 @@ function ChildReconciler(
 		return fiber
 	}
 
-	return function reconcileChidrenFibers(
+	return function reconcileChildrenFibers(
 		/**
 		 * 父 fiber
 		 */
