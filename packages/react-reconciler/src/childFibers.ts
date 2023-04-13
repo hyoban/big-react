@@ -304,9 +304,9 @@ function ChildReconciler(
 			)
 		}
 
-		// 兜底情况，删除旧节点
+		// 兜底情况，删除所有没用到的旧节点
 		if (currentFiber !== null) {
-			deleteChild(returnFiber, currentFiber)
+			deleteRemainingChildren(returnFiber, currentFiber)
 		}
 
 		if (__DEV__) {
