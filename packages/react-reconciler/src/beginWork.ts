@@ -9,6 +9,7 @@ import {
 	HostComponent,
 	HostRoot,
 	HostText,
+	Fragment,
 } from "./workTags"
 
 /**
@@ -27,6 +28,8 @@ export function beginWork(wip: FiberNode) {
 			return null
 		case FunctionComponent:
 			return updateFunctionComponent(wip)
+		case Fragment:
+			return updateFragment(wip)
 		default:
 			if (__DEV__) {
 				console.warn("(beginWork)", "未实现的类型", wip)
@@ -35,10 +38,16 @@ export function beginWork(wip: FiberNode) {
 	return null
 }
 
+function updateFragment(wip: FiberNode) {
+	const nextChildren = wip.pendingProps
+	reconcileChildren(wip, nextChildren)
+	return wip.child
+}
+
 function updateFunctionComponent(wip: FiberNode) {
 	// 执行 fc，得到 children
 	const nextChildren = renderWithHooks(wip)
-	reconcileChidren(wip, nextChildren)
+	reconcileChildren(wip, nextChildren)
 	return wip.child
 }
 
@@ -58,7 +67,7 @@ function updateHostRoot(wip: FiberNode) {
 	wip.memoizedState = memoizedState
 
 	const nextChildren = wip.memoizedState
-	reconcileChidren(wip, nextChildren)
+	reconcileChildren(wip, nextChildren)
 	return wip.child
 }
 
@@ -69,11 +78,11 @@ function updateHostComponent(wip: FiberNode) {
 	// children 从 react element 的 props 中取
 	const nextProps = wip.pendingProps
 	const nextChildren = nextProps.children
-	reconcileChidren(wip, nextChildren)
+	reconcileChildren(wip, nextChildren)
 	return wip.child
 }
 
-function reconcileChidren(wip: FiberNode, children?: ReactElementType) {
+function reconcileChildren(wip: FiberNode, children?: ReactElementType) {
 	// 获取父节点的 current fiberNode 来对比，返回 wip 的子 fiberNode
 	const current = wip.alternate
 	if (current === null) {
