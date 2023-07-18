@@ -163,6 +163,7 @@ function commitNestedComponent(
   onCommitUnmount: (fiber: FiberNode) => void,
 ) {
   let node = root
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     onCommitUnmount(node)
 
@@ -212,6 +213,7 @@ function commitPlacement(finishedWork: FiberNode) {
 function getHostSibling(fiber: FiberNode) {
   let node = fiber
 
+  // eslint-disable-next-line no-constant-condition
   findSiblings: while (true) {
     while (node.sibling === null) {
       const parent = node.return

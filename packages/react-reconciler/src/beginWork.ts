@@ -11,23 +11,24 @@ import {
   HostText,
   Fragment,
 } from "./workTags"
+import { Lane } from "./fiberLanes"
 
 /**
  * 递归中的递阶段，react element 和 fiber node 的比较，返回子 fiberNode
  * @param wip
  * @returns
  */
-export function beginWork(wip: FiberNode) {
+export function beginWork(wip: FiberNode, renderLane: Lane) {
   switch (wip.tag) {
     case HostRoot:
-      return updateHostRoot(wip)
+      return updateHostRoot(wip, renderLane)
     case HostComponent:
       return updateHostComponent(wip)
     case HostText:
       // 文本节点没有子节点，因此‘递’到底了
       return null
     case FunctionComponent:
-      return updateFunctionComponent(wip)
+      return updateFunctionComponent(wip, renderLane)
     case Fragment:
       return updateFragment(wip)
     default:
@@ -44,14 +45,14 @@ function updateFragment(wip: FiberNode) {
   return wip.child
 }
 
-function updateFunctionComponent(wip: FiberNode) {
+function updateFunctionComponent(wip: FiberNode, renderLane: Lane) {
   // 执行 fc，得到 children
-  const nextChildren = renderWithHooks(wip)
+  const nextChildren = renderWithHooks(wip, renderLane)
   reconcileChildren(wip, nextChildren)
   return wip.child
 }
 
-function updateHostRoot(wip: FiberNode) {
+function updateHostRoot(wip: FiberNode, renderLane: Lane) {
   // 对于 HostRoot
   // 1. 计算状态最新值
   // 2. 创建子 fiberNode
@@ -62,7 +63,7 @@ function updateHostRoot(wip: FiberNode) {
   const pending = updateQueue.shared.pending
   // 已经开始计算了，计算完成后 pending 就没有用了
   updateQueue.shared.pending = null
-  const { memoizedState } = processUpdateQueue(baseState, pending)
+  const { memoizedState } = processUpdateQueue(baseState, pending, renderLane)
   // 最新状态，也就是传入的 ReactElement
   wip.memoizedState = memoizedState
 

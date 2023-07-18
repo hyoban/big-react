@@ -10,6 +10,7 @@ import {
   NoLane,
   SyncLane,
   getHighestPriorityLane,
+  markRootFinished,
   mergeLanes,
 } from "./fiberLanes"
 import { flushSyncCallbacks, scheduleSyncCallback } from "./syncTaskQueue"
@@ -19,14 +20,16 @@ import { HostRoot } from "./workTags"
  * 正在工作的 fiberNode
  */
 let workInProgress: FiberNode | null = null
+let wipRootRenderLane: Lane = NoLane
 
 /**
  * 初始化，让 wip 指向需要遍历的第一个 fiberNode
  * @param root
  */
-function prepareFreshStack(root: FiberRootNode) {
+function prepareFreshStack(root: FiberRootNode, lane: Lane) {
   // FiberRootNode 不能作为 wip 工作单元
   workInProgress = createWorkInProgress(root.current, {})
+  wipRootRenderLane = lane
 }
 
 /**
@@ -90,6 +93,7 @@ function markUpdateFromFiberToRoot(fiber: FiberNode) {
 // 从 render root 改名，后面还有并发更新的入口
 function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
   const nextLanes = getHighestPriorityLane(root.pendingLanes)
+
   if (nextLanes !== SyncLane) {
     // 其它比 SyncLane 低的优先级
     // 目前只有 NoLane
@@ -97,8 +101,12 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
     return
   }
 
+  if (__DEV__) {
+    console.warn("(performSyncWorkOnRoot)", "render阶段开始")
+  }
+
   // 初始化
-  prepareFreshStack(root)
+  prepareFreshStack(root, lane)
 
   do {
     try {
@@ -116,6 +124,8 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
   // 递归过程结束，alternate 中已经完整的 fiber 树
   const finishedWork = root.current.alternate
   root.finishedWork = finishedWork
+  root.finishedLane = lane
+  wipRootRenderLane = NoLane
 
   // 根据 flag 提交更新，执行 DOM 操作
   commitRoot(root)
@@ -129,7 +139,7 @@ function workLoop() {
 
 function performUnitOfWork(fiber: FiberNode) {
   // 可能是子 fiberNode，或者是 null
-  const next = beginWork(fiber)
+  const next = beginWork(fiber, wipRootRenderLane)
   // 工作完成，props 已经确定
   fiber.memoizedProps = fiber.pendingProps
 
@@ -171,9 +181,15 @@ function commitRoot(root: FiberRootNode) {
   if (__DEV__) {
     console.warn("(commitRoot)", "commit 阶段开始", finishedWork)
   }
+  const lane = root.finishedLane
+  if (lane === NoLane && __DEV__) {
+    console.error("(commitRoot)", "commit阶段finishedLane不应该是NoLane")
+  }
 
   // 已经被记录下来，重置
   root.finishedWork = null
+  root.finishedLane = NoLane
+  markRootFinished(root, lane)
 
   // 判断是否存在三个子阶段需要执行的操作
   const subtreeHasEffects =
