@@ -5,6 +5,7 @@ import type { UpdateQueue } from "./updateQueue"
 import { createUpdate, createUpdateQueue, enqueueUpdate } from "./updateQueue"
 import { scheduleUpdateOnFiber } from "./workLoop"
 import { HostRoot } from "./workTags"
+import { requestUpdateLane } from "./fiberLanes"
 
 // mount 时调用的 API
 // ReactDOM.createRoot(container).render(reactElement)
@@ -36,14 +37,15 @@ export function updateContainer(
   const hostRootFiber = root.current
 
   // 首屏渲染，触发更新，在 beginWork 和 completeWork 中处理更新
-  const update = createUpdate<ReactElementType | null>(element)
+  const lane = requestUpdateLane()
+  const update = createUpdate<ReactElementType | null>(element, lane)
   enqueueUpdate(
     hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
     update,
   )
 
   // 调度更新，连接 container 和 renderRoot 的更新流程
-  scheduleUpdateOnFiber(hostRootFiber)
+  scheduleUpdateOnFiber(hostRootFiber, lane)
 
   return element
 }

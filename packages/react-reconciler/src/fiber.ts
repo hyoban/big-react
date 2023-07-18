@@ -4,6 +4,7 @@ import type { WorkTag } from "./workTags"
 import { Fragment, FunctionComponent, HostComponent } from "./workTags"
 import type { Flags } from "./fiberFlags"
 import { NoFlags } from "./fiberFlags"
+import { Lane, Lanes, NoLane, NoLanes } from "./fiberLanes"
 
 export class FiberNode {
   // 实例属性
@@ -100,12 +101,22 @@ export class FiberRootNode {
    * 更新完成后的 hostRootFiber
    */
   finishedWork: FiberNode | null
+  /**
+   * 所有未被消费的 lane 的集合
+   */
+  pendingLanes: Lanes
+  /**
+   * 本次更新消费的 lane
+   */
+  finishedLane: Lane
 
   constructor(container: Container, hostRootFiber: FiberNode) {
     this.container = container
     this.current = hostRootFiber
     hostRootFiber.stateNode = this
     this.finishedWork = null
+    this.pendingLanes = NoLanes
+    this.finishedLane = NoLane
   }
 }
 

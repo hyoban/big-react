@@ -4,6 +4,7 @@ import { completeWork } from "./completeWork"
 import type { FiberNode, FiberRootNode } from "./fiber"
 import { createWorkInProgress } from "./fiber"
 import { MutationMask, NoFlags } from "./fiberFlags"
+import { Lane, mergeLanes } from "./fiberLanes"
 import { HostRoot } from "./workTags"
 
 /**
@@ -24,12 +25,20 @@ function prepareFreshStack(root: FiberRootNode) {
  * 连接 renderRoot 的更新流程
  * @param fiber
  */
-export function scheduleUpdateOnFiber(fiber: FiberNode) {
+export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
   // TODO: 调度功能，不直接执行 renderRoot，而是由调度流程去执行
 
   // 触发更新未必从根节点，所以向上一直找到 fiberRootNode
   const root = markUpdateFromFiberToRoot(fiber)
+  markRootUpdated(root, lane)
   renderRoot(root)
+}
+
+/**
+ * 将本次更新的优先级记录到 fiberRootNode 上
+ */
+function markRootUpdated(root: FiberRootNode, lane: Lane) {
+  root.pendingLanes = mergeLanes(root.pendingLanes, lane)
 }
 
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
