@@ -15,12 +15,12 @@ import { HostRoot } from "./workTags"
  * @returns
  */
 export function createContainer(container: Container) {
-	// 创建两者，并关连
-	const hostRootFiber = new FiberNode(HostRoot, {}, null)
-	const root = new FiberRootNode(container, hostRootFiber)
-	// 连接更新机制
-	hostRootFiber.updateQueue = createUpdateQueue()
-	return root
+  // 创建两者，并关连
+  const hostRootFiber = new FiberNode(HostRoot, {}, null)
+  const root = new FiberRootNode(container, hostRootFiber)
+  // 连接更新机制
+  hostRootFiber.updateQueue = createUpdateQueue()
+  return root
 }
 
 /**
@@ -30,20 +30,20 @@ export function createContainer(container: Container) {
  * @returns
  */
 export function updateContainer(
-	element: ReactElementType | null,
-	root: FiberRootNode
+  element: ReactElementType | null,
+  root: FiberRootNode,
 ) {
-	const hostRootFiber = root.current
+  const hostRootFiber = root.current
 
-	// 首屏渲染，触发更新，在 beginWork 和 completeWork 中处理更新
-	const update = createUpdate<ReactElementType | null>(element)
-	enqueueUpdate(
-		hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
-		update
-	)
+  // 首屏渲染，触发更新，在 beginWork 和 completeWork 中处理更新
+  const update = createUpdate<ReactElementType | null>(element)
+  enqueueUpdate(
+    hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
+    update,
+  )
 
-	// 调度更新，连接 container 和 renderRoot 的更新流程
-	scheduleUpdateOnFiber(hostRootFiber)
+  // 调度更新，连接 container 和 renderRoot 的更新流程
+  scheduleUpdateOnFiber(hostRootFiber)
 
-	return element
+  return element
 }

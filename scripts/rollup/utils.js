@@ -17,11 +17,11 @@ const distPath = path.resolve(__dirname, "../../dist/node_modules")
  * @returns 包所处的路径
  */
 export function resolvePkgPath(pkgName, isDist) {
-	if (isDist) {
-		return `${distPath}/${pkgName}`
-	} else {
-		return `${pkgPath}/${pkgName}`
-	}
+  if (isDist) {
+    return `${distPath}/${pkgName}`
+  } else {
+    return `${pkgPath}/${pkgName}`
+  }
 }
 
 /**
@@ -29,17 +29,17 @@ export function resolvePkgPath(pkgName, isDist) {
  * @returns 解析包的package.json
  */
 export function getPackageJSON(pkgName) {
-	const path = `${resolvePkgPath(pkgName)}/package.json`
-	const str = fs.readFileSync(path, "utf8")
-	return JSON.parse(str)
+  const path = `${resolvePkgPath(pkgName)}/package.json`
+  const str = fs.readFileSync(path, "utf8")
+  return JSON.parse(str)
 }
 
 export function getBaseRollupPlugins({
-	alias = {
-		__DEV__: true,
-		preventAssignment: true,
-	},
-	typescript = {},
+  alias = {
+    __DEV__: true,
+    preventAssignment: true,
+  },
+  typescript = {},
 } = {}) {
-	return [replace(alias), cjs(), ts(typescript)]
+  return [replace(alias), cjs(), ts(typescript)]
 }
