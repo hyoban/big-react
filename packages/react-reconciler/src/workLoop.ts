@@ -25,7 +25,8 @@ function prepareFreshStack(root: FiberRootNode) {
  * @param fiber
  */
 export function scheduleUpdateOnFiber(fiber: FiberNode) {
-  // TODO: 调度功能
+  // TODO: 调度功能，不直接执行 renderRoot，而是由调度流程去执行
+
   // 触发更新未必从根节点，所以向上一直找到 fiberRootNode
   const root = markUpdateFromFiberToRoot(fiber)
   renderRoot(root)
@@ -58,6 +59,7 @@ function renderRoot(root: FiberRootNode) {
       }
       workInProgress = null
     }
+    // eslint-disable-next-line no-constant-condition
   } while (true)
 
   // 递归过程结束，alterate 中已经完整的 fiber 树
