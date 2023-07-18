@@ -1,10 +1,18 @@
+import { scheduleMicrotask } from "hostConfig"
 import { beginWork } from "./beginWork"
 import { commitMutationEffects } from "./commitWork"
 import { completeWork } from "./completeWork"
 import type { FiberNode, FiberRootNode } from "./fiber"
 import { createWorkInProgress } from "./fiber"
 import { MutationMask, NoFlags } from "./fiberFlags"
-import { Lane, mergeLanes } from "./fiberLanes"
+import {
+  Lane,
+  NoLane,
+  SyncLane,
+  getHighestPriorityLane,
+  mergeLanes,
+} from "./fiberLanes"
+import { flushSyncCallbacks, scheduleSyncCallback } from "./syncTaskQueue"
 import { HostRoot } from "./workTags"
 
 /**
@@ -26,12 +34,36 @@ function prepareFreshStack(root: FiberRootNode) {
  * @param fiber
  */
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
-  // TODO: 调度功能，不直接执行 renderRoot，而是由调度流程去执行
-
   // 触发更新未必从根节点，所以向上一直找到 fiberRootNode
   const root = markUpdateFromFiberToRoot(fiber)
   markRootUpdated(root, lane)
-  renderRoot(root)
+  // 调度功能，不直接执行 renderRoot，而是由调度流程去执行
+  ensureRootIsScheduled(root)
+}
+
+/**
+ * 调度阶段入口
+ */
+function ensureRootIsScheduled(root: FiberRootNode) {
+  const updateLane = getHighestPriorityLane(root.pendingLanes)
+  if (updateLane === NoLane) {
+    return
+  }
+  if (updateLane === SyncLane) {
+    // 同步优先级，用微任务调度
+    if (__DEV__) {
+      console.log(
+        "(ensureRootIsScheduled)",
+        "在微任务中调度，优先级：",
+        updateLane,
+      )
+      scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root, updateLane))
+      scheduleMicrotask(flushSyncCallbacks)
+    }
+  } else {
+    // 其它优先级，用宏任务调度
+    // 与 vue，svelte 等框架不同的地方
+  }
 }
 
 /**
@@ -55,7 +87,17 @@ function markUpdateFromFiberToRoot(fiber: FiberNode) {
   return null
 }
 
-function renderRoot(root: FiberRootNode) {
+// 从 render root 改名，后面还有并发更新的入口
+function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
+  const nextLanes = getHighestPriorityLane(root.pendingLanes)
+  if (nextLanes !== SyncLane) {
+    // 其它比 SyncLane 低的优先级
+    // 目前只有 NoLane
+    ensureRootIsScheduled(root)
+    return
+  }
+
+  // 初始化
   prepareFreshStack(root)
 
   do {
@@ -64,14 +106,14 @@ function renderRoot(root: FiberRootNode) {
       break
     } catch (e) {
       if (__DEV__) {
-        console.warn("(renderRoot)", "workLoop 发生错误", e)
+        console.warn("(performSyncWorkOnRoot)", "workLoop 发生错误", e)
       }
       workInProgress = null
     }
     // eslint-disable-next-line no-constant-condition
   } while (true)
 
-  // 递归过程结束，alterate 中已经完整的 fiber 树
+  // 递归过程结束，alternate 中已经完整的 fiber 树
   const finishedWork = root.current.alternate
   root.finishedWork = finishedWork
 

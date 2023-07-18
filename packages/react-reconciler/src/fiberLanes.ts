@@ -22,3 +22,11 @@ export function mergeLanes(a: Lane, b: Lane): Lanes {
 export function requestUpdateLane(): Lane {
   return SyncLane
 }
+
+/**
+ * lane 越小，优先级越高，不包含 0。
+ * 返回二进制中最靠右的一位
+ */
+export function getHighestPriorityLane(lanes: Lanes): Lane {
+  return lanes & -lanes
+}

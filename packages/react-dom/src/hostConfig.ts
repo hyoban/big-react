@@ -12,10 +12,7 @@ export const createInstance = (type: string, props: Props): Instance => {
   return element as DOMElement
 }
 
-export const appendInitialChild = (
-  parent: Instance  ,
-  child: Instance,
-) => {
+export const appendInitialChild = (parent: Instance, child: Instance) => {
   parent.appendChild(child)
 }
 
@@ -43,3 +40,10 @@ export function insertChildToContainer(
 ) {
   container.insertBefore(child, before)
 }
+
+export const scheduleMicrotask =
+  typeof queueMicrotask === "function"
+    ? queueMicrotask
+    : typeof Promise === "function"
+    ? (callback: (...args: any[]) => void) => Promise.resolve().then(callback)
+    : setTimeout
