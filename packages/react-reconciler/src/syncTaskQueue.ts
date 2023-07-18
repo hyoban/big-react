@@ -19,6 +19,7 @@ export function flushSyncCallbacks() {
         console.warn("(flushSyncCallbacks)", "同步任务队列执行错误", e)
       }
     } finally {
+      syncQueue = null
       isFlushingSyncQueue = false
     }
   }
