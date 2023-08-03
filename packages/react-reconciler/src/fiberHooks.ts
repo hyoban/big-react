@@ -11,6 +11,8 @@ import {
 } from "./updateQueue"
 import { scheduleUpdateOnFiber } from "./workLoop"
 import { Lane, NoLane, requestUpdateLane } from "./fiberLanes"
+import { Flags, PassiveEffect } from "./fiberFlags"
+import { HooksHasEffect, Passive } from "./hookEffectTags"
 
 let currentlyRenderingFiber: FiberNode | null = null
 let workInProgressHook: Hook | null = null
@@ -34,8 +36,30 @@ interface Hook {
   next: Hook | null
 }
 
+/**
+ * effect 数据结构
+ */
+export interface Effect {
+  tag: Flags
+  create: EffectCallback | void
+  destroy: EffectCallback | void
+  deps: EffectDependencies
+  /**
+   * 指向下一个 effect，便于从全部 hook 直接取到全部的 effect
+   */
+  next: Effect | null
+}
+
+export interface FCUpdateQueue<State> extends UpdateQueue<State> {
+  lastEffect: Effect | null
+}
+
+type EffectCallback = () => void
+type EffectDependencies = Array<any> | null
+
 const HooksDispatcherOnMount: Dispatcher = {
   useState: mountState,
+  useEffect: mountEffect,
 }
 
 const HooksDispatcherOnUpdate: Dispatcher = {
@@ -66,6 +90,63 @@ export function renderWithHooks(wip: FiberNode, lane: Lane) {
   currentHook = null
   renderLane = NoLane
   return children
+}
+
+function mountEffect(
+  create: EffectCallback | void,
+  deps: EffectDependencies | void,
+) {
+  const hook = mountWorkInProgressHook()
+  const nextDeps = deps === undefined ? null : deps
+  ;(currentlyRenderingFiber as FiberNode).flags |= PassiveEffect
+  hook.memoizedState = pushEffect(
+    Passive | HooksHasEffect,
+    create,
+    undefined,
+    nextDeps,
+  )
+}
+
+function pushEffect(
+  hookFlags: Flags,
+  create: EffectCallback | void,
+  destroy: EffectCallback | void,
+  deps: EffectDependencies,
+): Effect {
+  const effect: Effect = {
+    tag: hookFlags,
+    create,
+    destroy,
+    deps,
+    next: null,
+  }
+  const fiber = currentlyRenderingFiber as FiberNode
+  const updateQueue = fiber.updateQueue as FCUpdateQueue<any>
+  if (updateQueue === null) {
+    const updateQueue = createFCUpdateQueue()
+    fiber.updateQueue = updateQueue
+
+    effect.next = effect
+    updateQueue.lastEffect = effect
+  } else {
+    const lastEffect = updateQueue.lastEffect
+    if (lastEffect === null) {
+      effect.next = effect
+      updateQueue.lastEffect = effect
+    } else {
+      const firstEffect = lastEffect.next
+      lastEffect.next = effect
+      effect.next = firstEffect
+      updateQueue.lastEffect = effect
+    }
+  }
+  return effect
+}
+
+function createFCUpdateQueue<State>() {
+  const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>
+  updateQueue.lastEffect = null
+  return updateQueue
 }
 
 /**

@@ -13,6 +13,11 @@ export const useState: Dispatcher["useState"] = (initialState) => {
   return dispatcher.useState(initialState)
 }
 
+export const useEffect: Dispatcher["useEffect"] = (create, deps) => {
+  const dispatcher = resolveDispatcher()
+  return dispatcher.useEffect(create, deps)
+}
+
 /**
  * 内部数据共享层
  */
