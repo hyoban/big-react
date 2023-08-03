@@ -77,8 +77,8 @@ function commitMutationEffectsOnFiber(
   if ((flags & ChildDeletion) !== NoFlags) {
     const deletions = finishedWork.deletions
     if (deletions !== null) {
-      deletions.forEach(() => {
-        commitDeletion(finishedWork, root)
+      deletions.forEach((childToDelete) => {
+        commitDeletion(childToDelete, root)
       })
     }
     finishedWork.flags &= ~ChildDeletion
