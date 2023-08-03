@@ -5,6 +5,7 @@ import { Fragment, FunctionComponent, HostComponent } from "./workTags"
 import type { Flags } from "./fiberFlags"
 import { NoFlags } from "./fiberFlags"
 import { Lane, Lanes, NoLane, NoLanes } from "./fiberLanes"
+import { Effect } from "./fiberHooks"
 
 export class FiberNode {
   // 实例属性
@@ -90,6 +91,11 @@ export class FiberNode {
   }
 }
 
+export interface PendingPassiveEffects {
+  unmount: Effect[]
+  update: Effect[]
+}
+
 export class FiberRootNode {
   // 需要支持多种宿主环境
   container: Container
@@ -110,6 +116,8 @@ export class FiberRootNode {
    */
   finishedLane: Lane
 
+  pendingPassiveEffects: PendingPassiveEffects
+
   constructor(container: Container, hostRootFiber: FiberNode) {
     this.container = container
     this.current = hostRootFiber
@@ -117,6 +125,11 @@ export class FiberRootNode {
     this.finishedWork = null
     this.pendingLanes = NoLanes
     this.finishedLane = NoLane
+
+    this.pendingPassiveEffects = {
+      unmount: [],
+      update: [],
+    }
   }
 }
 

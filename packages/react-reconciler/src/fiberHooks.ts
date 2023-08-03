@@ -12,7 +12,7 @@ import {
 import { scheduleUpdateOnFiber } from "./workLoop"
 import { Lane, NoLane, requestUpdateLane } from "./fiberLanes"
 import { Flags, PassiveEffect } from "./fiberFlags"
-import { HooksHasEffect, Passive } from "./hookEffectTags"
+import { HookHasEffect, Passive } from "./hookEffectTags"
 
 let currentlyRenderingFiber: FiberNode | null = null
 let workInProgressHook: Hook | null = null
@@ -43,7 +43,7 @@ export interface Effect {
   tag: Flags
   create: EffectCallback | void
   destroy: EffectCallback | void
-  deps: EffectDependencies
+  deps: EffectDeps
   /**
    * 指向下一个 effect，便于从全部 hook 直接取到全部的 effect
    */
@@ -55,7 +55,7 @@ export interface FCUpdateQueue<State> extends UpdateQueue<State> {
 }
 
 type EffectCallback = () => void
-type EffectDependencies = Array<any> | null
+type EffectDeps = Array<any> | null
 
 const HooksDispatcherOnMount: Dispatcher = {
   useState: mountState,
@@ -64,12 +64,15 @@ const HooksDispatcherOnMount: Dispatcher = {
 
 const HooksDispatcherOnUpdate: Dispatcher = {
   useState: updateState,
+  useEffect: updateEffect,
 }
 
 export function renderWithHooks(wip: FiberNode, lane: Lane) {
   currentlyRenderingFiber = wip
   // 重置，存储当前 fiber 的 hooks
   wip.memoizedState = null
+  // 重置 effect 链表
+  wip.updateQueue = null
   renderLane = lane
 
   const current = wip.alternate
@@ -92,26 +95,65 @@ export function renderWithHooks(wip: FiberNode, lane: Lane) {
   return children
 }
 
-function mountEffect(
-  create: EffectCallback | void,
-  deps: EffectDependencies | void,
-) {
+function mountEffect(create: EffectCallback | void, deps: EffectDeps | void) {
   const hook = mountWorkInProgressHook()
   const nextDeps = deps === undefined ? null : deps
   ;(currentlyRenderingFiber as FiberNode).flags |= PassiveEffect
+
   hook.memoizedState = pushEffect(
-    Passive | HooksHasEffect,
+    Passive | HookHasEffect,
     create,
     undefined,
     nextDeps,
   )
 }
 
+function updateEffect(create: EffectCallback | void, deps: EffectDeps | void) {
+  const hook = updateWorkInProgressHook()
+  const nextDeps = deps === undefined ? null : deps
+  let destroy: EffectCallback | void
+
+  if (currentHook !== null) {
+    const prevEffect = currentHook.memoizedState as Effect
+    destroy = prevEffect.destroy
+
+    if (nextDeps !== null) {
+      // 浅比较依赖
+      const prevDeps = prevEffect.deps
+      if (areHookInputsEqual(nextDeps, prevDeps)) {
+        hook.memoizedState = pushEffect(Passive, create, destroy, nextDeps)
+        return
+      }
+    }
+    // 浅比较 不相等
+    ;(currentlyRenderingFiber as FiberNode).flags |= PassiveEffect
+    hook.memoizedState = pushEffect(
+      Passive | HookHasEffect,
+      create,
+      destroy,
+      nextDeps,
+    )
+  }
+}
+
+function areHookInputsEqual(nextDeps: EffectDeps, prevDeps: EffectDeps) {
+  if (prevDeps === null || nextDeps === null) {
+    return false
+  }
+  for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
+    if (Object.is(prevDeps[i], nextDeps[i])) {
+      continue
+    }
+    return false
+  }
+  return true
+}
+
 function pushEffect(
   hookFlags: Flags,
   create: EffectCallback | void,
   destroy: EffectCallback | void,
-  deps: EffectDependencies,
+  deps: EffectDeps,
 ): Effect {
   const effect: Effect = {
     tag: hookFlags,
@@ -125,10 +167,10 @@ function pushEffect(
   if (updateQueue === null) {
     const updateQueue = createFCUpdateQueue()
     fiber.updateQueue = updateQueue
-
     effect.next = effect
     updateQueue.lastEffect = effect
   } else {
+    // 插入effect
     const lastEffect = updateQueue.lastEffect
     if (lastEffect === null) {
       effect.next = effect
