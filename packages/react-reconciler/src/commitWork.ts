@@ -227,7 +227,7 @@ function commitDeletion(childToDelete: FiberNode, root: FiberRootNode) {
     const hostParent = getHostParent(childToDelete)
     if (hostParent !== null) {
       rootChildrenToDelete.forEach((node) => {
-        removeChild(hostParent, node.stateNode)
+        removeChild(node.stateNode, hostParent)
       })
     }
   }

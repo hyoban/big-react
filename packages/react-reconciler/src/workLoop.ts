@@ -1,4 +1,4 @@
-import { scheduleMicrotask } from "hostConfig"
+import { scheduleMicroTask } from "hostConfig"
 import { beginWork } from "./beginWork"
 import {
   commitHookEffectListCreate,
@@ -75,7 +75,7 @@ function ensureRootIsScheduled(root: FiberRootNode) {
         updateLane,
       )
       scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root, updateLane))
-      scheduleMicrotask(flushSyncCallbacks)
+      scheduleMicroTask(flushSyncCallbacks)
     }
   } else {
     // 其它优先级，用宏任务调度

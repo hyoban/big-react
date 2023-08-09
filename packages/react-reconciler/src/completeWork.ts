@@ -1,10 +1,9 @@
-import type { Container } from "hostConfig"
+import type { Container, Instance } from "hostConfig"
 import {
   appendInitialChild,
   createInstance,
   createTextInstance,
 } from "hostConfig"
-import { updateFiberProps } from "react-dom/src/SyntheticEvent"
 import type { FiberNode } from "./fiber"
 import { NoFlags, Update } from "./fiberFlags"
 import {
@@ -35,7 +34,8 @@ export function completeWork(wip: FiberNode) {
         // 变的属性名，变的属性值，变的属性名，变的属性值
 
         // 这里的实现是为了省事
-        updateFiberProps(current.stateNode, newProps)
+        // updateFiberProps(current.stateNode, newProps)
+        markUpdate(wip)
       } else {
         // mount
         // 构建离屏 DOM，同时记录 props 到 DOM 上
@@ -75,7 +75,8 @@ export function completeWork(wip: FiberNode) {
   }
 }
 
-function appendAllChildren(parent: Container, wip: FiberNode) {
+// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+function appendAllChildren(parent: Container | Instance, wip: FiberNode) {
   // 插入的应该是组件中的实际节点
   // 比如对于函数组件，应该插入的是函数组件中经过递归找到的实际的节点
 
