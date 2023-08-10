@@ -1,4 +1,10 @@
 import type { Container } from "hostConfig"
+import {
+  unstable_ImmediatePriority,
+  unstable_NormalPriority,
+  unstable_UserBlockingPriority,
+  unstable_runWithPriority,
+} from "scheduler"
 import type { Props } from "shared/ReactTypes"
 
 /**
@@ -59,7 +65,7 @@ function dispatchEvent(container: Container, eventType: string, e: Event) {
 
   const se = createSyntheticEvent(e)
 
-  // 遍历 captue
+  // 遍历 capture
   triggerEventFlow(capture, se)
 
   if (!se.__stopPropagation) {
@@ -131,6 +137,7 @@ function getEventCallbackNameFromEventType(
 function createSyntheticEvent(e: Event) {
   const syntheticEvent = e as SyntheticEvent
   syntheticEvent.__stopPropagation = false
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const originStopPropagation = e.stopPropagation
 
   syntheticEvent.stopPropagation = () => {
@@ -145,10 +152,25 @@ function createSyntheticEvent(e: Event) {
 function triggerEventFlow(paths: EventCallback[], se: SyntheticEvent) {
   for (let i = 0; i < paths.length; i++) {
     const callback = paths[i]
-    callback(se)
+    unstable_runWithPriority(eventTypeToSchedulerPriority(se.type), () => {
+      callback.call(null, se)
+    })
 
     if (se.__stopPropagation) {
       break
     }
+  }
+}
+
+function eventTypeToSchedulerPriority(eventType: string) {
+  switch (eventType) {
+    case "click":
+    case "keydown":
+    case "keyup":
+      return unstable_ImmediatePriority
+    case "scroll":
+      return unstable_UserBlockingPriority
+    default:
+      return unstable_NormalPriority
   }
 }

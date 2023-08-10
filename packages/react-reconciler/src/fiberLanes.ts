@@ -1,3 +1,10 @@
+import {
+  unstable_IdlePriority,
+  unstable_ImmediatePriority,
+  unstable_NormalPriority,
+  unstable_UserBlockingPriority,
+  unstable_getCurrentPriorityLevel,
+} from "scheduler"
 import { FiberRootNode } from "./fiber"
 
 /**
@@ -13,16 +20,24 @@ export type Lanes = number
 export const SyncLane = 0b0001
 export const NoLane = 0b0000
 export const NoLanes = 0b0000
+/**
+ * 连续输入事件，如拖拽
+ */
+export const InputContinuousLane = 0b0010
+export const DefaultLane = 0b0100
+export const IdleLane = 0b1000
 
 export function mergeLanes(a: Lane, b: Lane): Lanes {
   return a | b
 }
 
 /**
- * TODO: 对于不同情况触发的更新，返回不同的优先级
+ * 对于不同情况触发的更新，返回不同的优先级
  */
 export function requestUpdateLane(): Lane {
-  return SyncLane
+  const currentSchedulerPriority = unstable_getCurrentPriorityLevel()
+  const lane = schedulerPriorityToLane(currentSchedulerPriority)
+  return lane
 }
 
 /**
@@ -35,4 +50,31 @@ export function getHighestPriorityLane(lanes: Lanes): Lane {
 
 export function markRootFinished(root: FiberRootNode, lanes: Lanes) {
   root.pendingLanes &= ~lanes
+}
+
+export function lanesToSchedulerPriority(lanes: Lanes) {
+  const lane = getHighestPriorityLane(lanes)
+  if (lane === SyncLane) {
+    return unstable_ImmediatePriority
+  }
+  if (lane === InputContinuousLane) {
+    return unstable_UserBlockingPriority
+  }
+  if (lane === DefaultLane) {
+    return unstable_NormalPriority
+  }
+  return unstable_IdlePriority
+}
+
+export function schedulerPriorityToLane(schedulerPriority: number) {
+  if (schedulerPriority === unstable_ImmediatePriority) {
+    return SyncLane
+  }
+  if (schedulerPriority === unstable_UserBlockingPriority) {
+    return InputContinuousLane
+  }
+  if (schedulerPriority === unstable_NormalPriority) {
+    return DefaultLane
+  }
+  return NoLane
 }
