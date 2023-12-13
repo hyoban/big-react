@@ -152,6 +152,8 @@ function createSyntheticEvent(e: Event) {
 function triggerEventFlow(paths: EventCallback[], se: SyntheticEvent) {
   for (let i = 0; i < paths.length; i++) {
     const callback = paths[i]
+
+    // 此方法将全局的优先级设置为当前事件的优先级
     unstable_runWithPriority(eventTypeToSchedulerPriority(se.type), () => {
       callback.call(null, se)
     })

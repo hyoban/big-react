@@ -17,6 +17,7 @@ export type Lane = number
 export type Lanes = number
 
 // 使用二进制表示有利于选择多个优先级的组合
+// 非 0 数值越低，优先级越高
 export const SyncLane = 0b0001
 export const NoLane = 0b0000
 export const NoLanes = 0b0000
@@ -32,7 +33,7 @@ export function mergeLanes(a: Lane, b: Lane): Lanes {
 }
 
 /**
- * 对于不同情况触发的更新，返回不同的优先级
+ * 对于不同情况触发的更新，返回不同的优先级。从上下文中获取当前的优先级。
  */
 export function requestUpdateLane(): Lane {
   const currentSchedulerPriority = unstable_getCurrentPriorityLevel()
@@ -52,6 +53,9 @@ export function markRootFinished(root: FiberRootNode, lanes: Lanes) {
   root.pendingLanes &= ~lanes
 }
 
+/**
+ * 将 react 运行时的优先级 lane 转换为调度器中的优先级
+ */
 export function lanesToSchedulerPriority(lanes: Lanes) {
   const lane = getHighestPriorityLane(lanes)
   if (lane === SyncLane) {
@@ -66,6 +70,9 @@ export function lanesToSchedulerPriority(lanes: Lanes) {
   return unstable_IdlePriority
 }
 
+/**
+ * 调度器中的优先级转换为 react 运行时的优先级 lane
+ */
 export function schedulerPriorityToLane(schedulerPriority: number) {
   if (schedulerPriority === unstable_ImmediatePriority) {
     return SyncLane
