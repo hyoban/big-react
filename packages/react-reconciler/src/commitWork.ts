@@ -1,6 +1,6 @@
 import {
   appendChildToContainer,
-  commitTextUpdate,
+  commitUpdate,
   insertChildToContainer,
   removeChild,
 } from "hostConfig"
@@ -155,20 +155,6 @@ export function commitHookEffectListCreate(flags: Flags, lastEffect: Effect) {
       effect.destroy = create()
     }
   })
-}
-
-function commitUpdate(fiber: FiberNode) {
-  switch (fiber.tag) {
-    case HostText: {
-      const text = fiber.memoizedProps.content
-      return commitTextUpdate(fiber.stateNode, text)
-    }
-    default: {
-      if (__DEV__) {
-        console.warn("(commitUpdate)", "未实现的 update 类型", fiber)
-      }
-    }
-  }
 }
 
 function recordHostChildrenToDelete(
