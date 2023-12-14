@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "build:dev": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js",
-    "demo": "vite serve demos/test-fc --config scripts/vite/vite.config.js --force",
+    "demo": "vite serve demos/transition --config scripts/vite/vite.config.js --force",
     "test": "jest --config scripts/jest/jest.config.js",
     "dep:up": "taze -rw latest && pnpm i"
   },
