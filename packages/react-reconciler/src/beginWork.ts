@@ -1,4 +1,5 @@
 import { mountChildFibers, reconcileChildFibers } from "./childFibers"
+import { Ref } from "./fiberFlags"
 import { renderWithHooks } from "./fiberHooks"
 import { Lane } from "./fiberLanes"
 import { processUpdateQueue } from "./updateQueue"
@@ -73,15 +74,16 @@ function updateHostRoot(wip: FiberNode, renderLane: Lane) {
   return wip.child
 }
 
-function updateHostComponent(wip: FiberNode) {
+function updateHostComponent(workInProgress: FiberNode) {
   // 对于 HostComponent，不会触发更新
   // 1. 创建子 fiberNode
 
   // children 从 react element 的 props 中取
-  const nextProps = wip.pendingProps
+  const nextProps = workInProgress.pendingProps
   const nextChildren = nextProps.children
-  reconcileChildren(wip, nextChildren)
-  return wip.child
+  markRef(workInProgress.alternate, workInProgress)
+  reconcileChildren(workInProgress, nextChildren)
+  return workInProgress.child
 }
 
 function reconcileChildren(wip: FiberNode, children?: ReactElementType) {
@@ -96,5 +98,19 @@ function reconcileChildren(wip: FiberNode, children?: ReactElementType) {
 
     // 更新
     wip.child = reconcileChildFibers(wip, current.child, children)
+  }
+}
+
+function markRef(current: FiberNode | null, workInProgress: FiberNode) {
+  const ref = workInProgress.ref
+
+  // 标记Ref需要满足：
+  if (
+    // mount时：存在ref
+    (current === null && ref !== null) ||
+    // update时：ref引用变化
+    (current !== null && current.ref !== ref)
+  ) {
+    workInProgress.flags |= Ref
   }
 }

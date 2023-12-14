@@ -4,7 +4,7 @@ import {
   createTextInstance,
 } from "hostConfig"
 
-import { NoFlags, Update } from "./fiberFlags"
+import { NoFlags, Ref, Update } from "./fiberFlags"
 import {
   Fragment,
   FunctionComponent,
@@ -18,13 +18,13 @@ import type { Container, Instance } from "hostConfig"
 
 /**
  * 递归中的归。首次渲染时构建离屏 DOM 树。
- * @param wip
+ * @param workInProgress
  * @returns
  */
-export function completeWork(wip: FiberNode) {
-  const newProps = wip.pendingProps
-  const current = wip.alternate
-  switch (wip.tag) {
+export function completeWork(workInProgress: FiberNode) {
+  const newProps = workInProgress.pendingProps
+  const current = workInProgress.alternate
+  switch (workInProgress.tag) {
     case HostComponent:
       if (current !== null && current.stateNode) {
         // update
@@ -37,17 +37,22 @@ export function completeWork(wip: FiberNode) {
 
         // 这里的实现是为了省事
         // updateFiberProps(current.stateNode, newProps)
-        markUpdate(wip)
+        markUpdate(workInProgress)
       } else {
         // mount
         // 构建离屏 DOM，同时记录 props 到 DOM 上
-        const instance = createInstance(wip.type, newProps)
+        const instance = createInstance(workInProgress.type, newProps)
         // 将子 fiber 创建好的 DOM 插入到 instance 中
-        appendAllChildren(instance, wip)
+        appendAllChildren(instance, workInProgress)
         // 将当前插入完成的更大的 DOM 树位置记录在 FiberNode 中
-        wip.stateNode = instance
+        workInProgress.stateNode = instance
       }
-      bubbleProperties(wip)
+
+      // 标记 Ref
+      if (current?.ref !== workInProgress.ref) {
+        markRef(workInProgress)
+      }
+      bubbleProperties(workInProgress)
       return null
     case HostText:
       if (current !== null && current.stateNode) {
@@ -55,20 +60,20 @@ export function completeWork(wip: FiberNode) {
         const oldText = current.memoizedProps.content
         const newText = newProps.content
         if (oldText !== newText) {
-          markUpdate(wip)
+          markUpdate(workInProgress)
         }
       } else {
         // 构建离屏 DOM
         const instance = createTextInstance(newProps.content)
         // hostText 不存在 child，不需要挂载
-        wip.stateNode = instance
+        workInProgress.stateNode = instance
       }
-      bubbleProperties(wip)
+      bubbleProperties(workInProgress)
       return null
     case HostRoot:
     case FunctionComponent:
     case Fragment:
-      bubbleProperties(wip)
+      bubbleProperties(workInProgress)
       return null
     default:
       if (__DEV__) {
@@ -132,4 +137,8 @@ function bubbleProperties(wip: FiberNode) {
  */
 function markUpdate(fiber: FiberNode) {
   fiber.flags |= Update
+}
+
+function markRef(fiber: FiberNode) {
+  fiber.flags |= Ref
 }
