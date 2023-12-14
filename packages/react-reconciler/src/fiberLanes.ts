@@ -1,3 +1,4 @@
+import ReactCurrentBatchConfig from "react/src/currentBatchConfig"
 import {
   unstable_getCurrentPriorityLevel,
   unstable_IdlePriority,
@@ -19,15 +20,16 @@ export type Lanes = number
 
 // 使用二进制表示有利于选择多个优先级的组合
 // 非 0 数值越低，优先级越高
-export const SyncLane = 0b0001
-export const NoLane = 0b0000
-export const NoLanes = 0b0000
+export const SyncLane = 0b00001
+export const NoLane = 0b00000
+export const NoLanes = 0b00000
 /**
  * 连续输入事件，如拖拽
  */
-export const InputContinuousLane = 0b0010
-export const DefaultLane = 0b0100
-export const IdleLane = 0b1000
+export const InputContinuousLane = 0b00010
+export const DefaultLane = 0b00100
+export const TransitionLane = 0b01000
+export const IdleLane = 0b10000
 
 export function mergeLanes(a: Lane, b: Lane): Lanes {
   return a | b
@@ -37,6 +39,10 @@ export function mergeLanes(a: Lane, b: Lane): Lanes {
  * 对于不同情况触发的更新，返回不同的优先级。从上下文中获取当前的优先级。
  */
 export function requestUpdateLane(): Lane {
+  const isTransition = ReactCurrentBatchConfig.transition !== null
+  if (isTransition) {
+    return TransitionLane
+  }
   const currentSchedulerPriority = unstable_getCurrentPriorityLevel()
   const lane = schedulerPriorityToLane(currentSchedulerPriority)
   return lane
