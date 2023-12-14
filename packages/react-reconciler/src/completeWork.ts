@@ -1,10 +1,9 @@
-import type { Container, Instance } from "hostConfig"
 import {
   appendInitialChild,
   createInstance,
   createTextInstance,
 } from "hostConfig"
-import type { FiberNode } from "./fiber"
+
 import { NoFlags, Update } from "./fiberFlags"
 import {
   Fragment,
@@ -13,6 +12,9 @@ import {
   HostRoot,
   HostText,
 } from "./workTags"
+
+import type { FiberNode } from "./fiber"
+import type { Container, Instance } from "hostConfig"
 
 /**
  * 递归中的归。首次渲染时构建离屏 DOM 树。

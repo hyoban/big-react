@@ -1,7 +1,8 @@
 import path from "path"
-import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
 import replace from "@rollup/plugin-replace"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+
 import { resolvePkgPath } from "../rollup/utils"
 
 // https://vitejs.dev/config/

@@ -1,4 +1,11 @@
 import { scheduleMicroTask } from "hostConfig"
+import {
+  unstable_NormalPriority as NormalPriority,
+  unstable_scheduleCallback as scheduleCallback,
+  unstable_cancelCallback,
+  unstable_shouldYield,
+} from "scheduler"
+
 import { beginWork } from "./beginWork"
 import {
   commitHookEffectListCreate,
@@ -7,27 +14,22 @@ import {
   commitMutationEffects,
 } from "./commitWork"
 import { completeWork } from "./completeWork"
-import type { FiberNode, FiberRootNode, PendingPassiveEffects } from "./fiber"
 import { createWorkInProgress } from "./fiber"
 import { MutationMask, NoFlags, PassiveMask } from "./fiberFlags"
 import {
-  Lane,
-  NoLane,
-  SyncLane,
   getHighestPriorityLane,
+  Lane,
   lanesToSchedulerPriority,
   markRootFinished,
   mergeLanes,
+  NoLane,
+  SyncLane,
 } from "./fiberLanes"
+import { HookHasEffect, Passive } from "./hookEffectTags"
 import { flushSyncCallbacks, scheduleSyncCallback } from "./syncTaskQueue"
 import { HostRoot } from "./workTags"
-import {
-  unstable_scheduleCallback as scheduleCallback,
-  unstable_NormalPriority as NormalPriority,
-  unstable_shouldYield,
-  unstable_cancelCallback,
-} from "scheduler"
-import { HookHasEffect, Passive } from "./hookEffectTags"
+
+import type { FiberNode, FiberRootNode, PendingPassiveEffects } from "./fiber"
 
 /**
  * 正在工作的 fiberNode

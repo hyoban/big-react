@@ -1,4 +1,5 @@
 import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols"
+
 import type {
   ElementType,
   Key,
@@ -6,6 +7,7 @@ import type {
   ReactElementType,
   Ref,
 } from "shared/ReactTypes"
+
 export { REACT_FRAGMENT_TYPE as Fragment } from "shared/ReactSymbols"
 
 /**

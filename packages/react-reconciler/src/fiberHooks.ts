@@ -1,8 +1,8 @@
-import type { Dispatch, Dispatcher } from "react/src/currentDispatcher"
 import internals from "shared/internals"
-import type { Action } from "shared/ReactTypes"
-import type { FiberNode } from "./fiber"
-import type { UpdateQueue } from "./updateQueue"
+
+import { Flags, PassiveEffect } from "./fiberFlags"
+import { Lane, NoLane, requestUpdateLane } from "./fiberLanes"
+import { HookHasEffect, Passive } from "./hookEffectTags"
 import {
   createUpdate,
   createUpdateQueue,
@@ -10,9 +10,11 @@ import {
   processUpdateQueue,
 } from "./updateQueue"
 import { scheduleUpdateOnFiber } from "./workLoop"
-import { Lane, NoLane, requestUpdateLane } from "./fiberLanes"
-import { Flags, PassiveEffect } from "./fiberFlags"
-import { HookHasEffect, Passive } from "./hookEffectTags"
+
+import type { FiberNode } from "./fiber"
+import type { UpdateQueue } from "./updateQueue"
+import type { Dispatch, Dispatcher } from "react/src/currentDispatcher"
+import type { Action } from "shared/ReactTypes"
 
 let currentlyRenderingFiber: FiberNode | null = null
 let workInProgressHook: Hook | null = null

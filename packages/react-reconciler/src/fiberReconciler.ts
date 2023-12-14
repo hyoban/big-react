@@ -1,11 +1,12 @@
-import type { Container } from "hostConfig"
-import type { ReactElementType } from "shared/ReactTypes"
 import { FiberNode, FiberRootNode } from "./fiber"
-import type { UpdateQueue } from "./updateQueue"
+import { requestUpdateLane } from "./fiberLanes"
 import { createUpdate, createUpdateQueue, enqueueUpdate } from "./updateQueue"
 import { scheduleUpdateOnFiber } from "./workLoop"
 import { HostRoot } from "./workTags"
-import { requestUpdateLane } from "./fiberLanes"
+
+import type { UpdateQueue } from "./updateQueue"
+import type { Container } from "hostConfig"
+import type { ReactElementType } from "shared/ReactTypes"
 
 // mount 时调用的 API
 // ReactDOM.createRoot(container).render(reactElement)

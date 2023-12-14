@@ -1,7 +1,8 @@
 import { FiberNode } from "react-reconciler/src/fiber"
 import { HostComponent, HostText } from "react-reconciler/src/workTags"
 import { Props } from "shared/ReactTypes"
-import { updateFiberProps, DOMElement } from "./SyntheticEvent"
+
+import { DOMElement, updateFiberProps } from "./SyntheticEvent"
 
 export type Container = Element
 export type Instance = Element

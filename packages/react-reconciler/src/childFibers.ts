@@ -1,13 +1,15 @@
 import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from "shared/ReactSymbols"
-import type { Key, Props } from "shared/ReactTypes"
+
 import {
-  FiberNode,
   createFiberFromElement,
   createFiberFromFragment,
   createWorkInProgress,
+  FiberNode,
 } from "./fiber"
 import { ChildDeletion, Placement } from "./fiberFlags"
 import { Fragment, HostText } from "./workTags"
+
+import type { Key, Props } from "shared/ReactTypes"
 
 type ExistingChildren = Map<string | number, FiberNode>
 

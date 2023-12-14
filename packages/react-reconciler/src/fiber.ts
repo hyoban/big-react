@@ -1,12 +1,14 @@
-import type { Key, Props, ReactElementType, Ref } from "shared/ReactTypes"
-import type { Container } from "hostConfig"
-import type { WorkTag } from "./workTags"
-import { Fragment, FunctionComponent, HostComponent } from "./workTags"
-import type { Flags } from "./fiberFlags"
-import { NoFlags } from "./fiberFlags"
-import { Lane, Lanes, NoLane, NoLanes } from "./fiberLanes"
-import { Effect } from "./fiberHooks"
 import { CallbackNode } from "scheduler"
+
+import { NoFlags } from "./fiberFlags"
+import { Effect } from "./fiberHooks"
+import { Lane, Lanes, NoLane, NoLanes } from "./fiberLanes"
+import { Fragment, FunctionComponent, HostComponent } from "./workTags"
+
+import type { Flags } from "./fiberFlags"
+import type { WorkTag } from "./workTags"
+import type { Container } from "hostConfig"
+import type { Key, Props, ReactElementType, Ref } from "shared/ReactTypes"
 
 export class FiberNode {
   // 实例属性

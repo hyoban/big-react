@@ -1,10 +1,11 @@
-import type { Container } from "hostConfig"
 import {
   unstable_ImmediatePriority,
   unstable_NormalPriority,
-  unstable_UserBlockingPriority,
   unstable_runWithPriority,
+  unstable_UserBlockingPriority,
 } from "scheduler"
+
+import type { Container } from "hostConfig"
 import type { Props } from "shared/ReactTypes"
 
 /**

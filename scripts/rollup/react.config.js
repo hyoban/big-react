@@ -1,4 +1,5 @@
 import generatePackageJson from "rollup-plugin-generate-package-json"
+
 import { getBaseRollupPlugins, getPackageJSON, resolvePkgPath } from "./utils"
 
 const { name, module } = getPackageJSON("react")

@@ -1,10 +1,11 @@
 import {
+  unstable_getCurrentPriorityLevel,
   unstable_IdlePriority,
   unstable_ImmediatePriority,
   unstable_NormalPriority,
   unstable_UserBlockingPriority,
-  unstable_getCurrentPriorityLevel,
 } from "scheduler"
+
 import { FiberRootNode } from "./fiber"
 
 /**

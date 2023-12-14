@@ -1,5 +1,6 @@
-import generatePackageJson from "rollup-plugin-generate-package-json"
 import alias from "@rollup/plugin-alias"
+import generatePackageJson from "rollup-plugin-generate-package-json"
+
 import { getBaseRollupPlugins, getPackageJSON, resolvePkgPath } from "./utils"
 
 const { name, module, peerDependencies } = getPackageJSON("react-dom")

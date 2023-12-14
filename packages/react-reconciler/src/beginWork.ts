@@ -1,17 +1,18 @@
-import type { ReactElementType } from "shared/ReactTypes"
 import { mountChildFibers, reconcileChildFibers } from "./childFibers"
-import type { FiberNode } from "./fiber"
 import { renderWithHooks } from "./fiberHooks"
-import type { UpdateQueue } from "./updateQueue"
+import { Lane } from "./fiberLanes"
 import { processUpdateQueue } from "./updateQueue"
 import {
+  Fragment,
   FunctionComponent,
   HostComponent,
   HostRoot,
   HostText,
-  Fragment,
 } from "./workTags"
-import { Lane } from "./fiberLanes"
+
+import type { FiberNode } from "./fiber"
+import type { UpdateQueue } from "./updateQueue"
+import type { ReactElementType } from "shared/ReactTypes"
 
 /**
  * 递归中的递阶段，react element 和 fiber node 的比较，返回子 fiberNode

@@ -1,11 +1,10 @@
-import type { Container, Instance } from "hostConfig"
 import {
   appendChildToContainer,
   commitTextUpdate,
   insertChildToContainer,
   removeChild,
 } from "hostConfig"
-import type { FiberNode, FiberRootNode, PendingPassiveEffects } from "./fiber"
+
 import {
   ChildDeletion,
   Flags,
@@ -15,14 +14,17 @@ import {
   Placement,
   Update,
 } from "./fiberFlags"
+import { Effect, FCUpdateQueue } from "./fiberHooks"
+import { HookHasEffect } from "./hookEffectTags"
 import {
   FunctionComponent,
   HostComponent,
   HostRoot,
   HostText,
 } from "./workTags"
-import { Effect, FCUpdateQueue } from "./fiberHooks"
-import { HookHasEffect } from "./hookEffectTags"
+
+import type { FiberNode, FiberRootNode, PendingPassiveEffects } from "./fiber"
+import type { Container, Instance } from "hostConfig"
 
 let nextEffect: FiberNode | null = null
 

@@ -9,6 +9,7 @@
   "scripts": {
     "lint": "eslint . --fix",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build:dev": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js",
     "demo": "vite serve demos/test-fc --config scripts/vite/vite.config.js --force",
     "test": "jest --config scripts/jest/jest.config.js",
@@ -18,6 +19,7 @@
     "@babel/core": "^7.22.9",
     "@babel/plugin-transform-react-jsx": "^7.22.5",
     "@babel/preset-env": "^7.22.9",
+    "@ianvs/prettier-plugin-sort-imports": "^4.1.1",
     "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-replace": "^5.0.2",
@@ -41,9 +43,6 @@
     "taze": "^0.11.2",
     "typescript": "^5.1.6",
     "vite": "^4.4.8"
-  },
-  "prettier": {
-    "semi": false
   },
   "dependencies": {
     "scheduler": "^0.23.0"

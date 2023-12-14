@@ -1,6 +1,7 @@
-import type { Dispatcher } from "./src/currentDispatcher"
 import currentDispatcher, { resolveDispatcher } from "./src/currentDispatcher"
 import { isValidElement as isValidElementFn, jsx } from "./src/jsx"
+
+import type { Dispatcher } from "./src/currentDispatcher"
 
 export const version = "1.0.0"
 

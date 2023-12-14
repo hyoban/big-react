@@ -2,9 +2,11 @@ import {
   createContainer,
   updateContainer,
 } from "react-reconciler/src/fiberReconciler"
-import type { ReactElementType } from "shared/ReactTypes"
-import type { Container } from "./hostConfig"
+
 import { initEvent } from "./SyntheticEvent"
+
+import type { Container } from "./hostConfig"
+import type { ReactElementType } from "shared/ReactTypes"
 
 // ReactDOM.createRoot(root).render(element)
 

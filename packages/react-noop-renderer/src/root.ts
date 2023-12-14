@@ -1,12 +1,12 @@
-import { Instance } from "./hostConfig"
 import {
   createContainer,
   updateContainer,
 } from "react-reconciler/src/fiberReconciler"
+import * as Scheduler from "scheduler"
 import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from "shared/ReactSymbols"
 import { ReactElementType } from "shared/ReactTypes"
-import { Container } from "./hostConfig"
-import * as Scheduler from "scheduler"
+
+import { Container, Instance } from "./hostConfig"
 
 let idCounter = 0
 
