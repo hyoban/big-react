@@ -222,7 +222,11 @@ function performSyncWorkOnRoot(root: FiberRootNode) {
   }
 }
 
-function renderRoot(root: FiberRootNode, lane: Lane, shouldTimeSlice: boolean) {
+function renderRoot(
+  root: FiberRootNode,
+  lane: Lane,
+  shouldTimeSlice: boolean,
+): RootExitStatus {
   if (__DEV__) {
     console.warn("(renderRoot)", `开始${shouldTimeSlice ? "并发" : "同步"}更新`)
   }

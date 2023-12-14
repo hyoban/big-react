@@ -3,6 +3,7 @@ module.exports = {
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier",
   ],
   plugins: ["@typescript-eslint"],
   parser: "@typescript-eslint/parser",
@@ -17,7 +18,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ["*.cjs", "*.js"],
+  ignorePatterns: ["*.cjs", "*.mjs", "*.js", "demos/**/*"],
   rules: {
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unsafe-argument": "off",
